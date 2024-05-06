@@ -26,13 +26,13 @@ public class ChessMove {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ChessMove chessMove = (ChessMove) o;
-        return Objects.equals(startPosition, chessMove.startPosition)
-                && Objects.equals(endPosition, chessMove.endPosition)
-                && promotionPiece == chessMove.promotionPiece;
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        ChessMove that = (ChessMove) obj;
+        return Objects.equals(startPosition, that.startPosition) &&
+                Objects.equals(endPosition, that.endPosition) &&
+                promotionPiece == that.promotionPiece;
     }
 
     @Override
@@ -40,13 +40,9 @@ public class ChessMove {
         return Objects.hash(startPosition, endPosition, promotionPiece);
     }
 
-    public boolean isValid() {
-        return startPosition != null && endPosition != null;
-    }
-
     @Override
     public String toString() {
-        return String.format("%s to %s, promote to %s", startPosition, endPosition,
-                promotionPiece != null ? promotionPiece : "none");
+        return String.format("Move from %s to %s%s", startPosition, endPosition,
+                promotionPiece != null ? String.format(" promoting to %s", promotionPiece) : "");
     }
 }
