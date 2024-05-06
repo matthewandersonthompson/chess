@@ -5,31 +5,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-/**
- * Represents a single chess piece
- * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
- */
 public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
 
-    /**
-     * Constructor to initialize a chess piece
-     *
-     * @param pieceColor Team color of the piece (White or Black)
-     * @param type       Type of the chess piece (King, Queen, etc.)
-     */
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
     }
 
-    /**
-     * Enum representing the various different chess piece options
-     */
     public enum PieceType {
         KING,
         QUEEN,
@@ -39,26 +24,14 @@ public class ChessPiece {
         PAWN
     }
 
-    /**
-     * @return Which team this chess piece belongs to
-     */
     public ChessGame.TeamColor getTeamColor() {
         return pieceColor;
     }
 
-    /**
-     * @return which type of chess piece this piece is
-     */
     public PieceType getPieceType() {
         return type;
     }
 
-    /**
-     * Override the equals method to compare chess pieces
-     *
-     * @param o Other object to compare against
-     * @return True if the two chess pieces are equal, false otherwise
-     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -67,33 +40,16 @@ public class ChessPiece {
         return pieceColor == that.pieceColor && type == that.type;
     }
 
-    /**
-     * Generate a unique hash code for this chess piece based on all attributes
-     *
-     * @return Unique hash code
-     */
     @Override
     public int hashCode() {
         return Objects.hash(pieceColor, type);
     }
 
-    /**
-     * Provide a string representation of the ChessPiece object
-     *
-     * @return String representation of the chess piece
-     */
     @Override
     public String toString() {
         return String.format("%s %s", pieceColor, type);
     }
 
-    /**
-     * Calculates all the positions a chess piece can move to
-     * Does not take into account moves that are illegal due to leaving the king in
-     * danger
-     *
-     * @return Collection of valid moves
-     */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         List<ChessMove> moves = new ArrayList<>();
         switch (type) {
