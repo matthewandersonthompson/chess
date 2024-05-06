@@ -63,7 +63,6 @@ public class ChessPiece {
         return moves;
     }
 
-    // Add King moves (one square in any direction)
     private void addKingMoves(ChessBoard board, ChessPosition myPosition, List<ChessMove> moves) {
         int[][] directions = {
                 {1, 0}, {-1, 0}, {0, 1}, {0, -1},
@@ -72,7 +71,6 @@ public class ChessPiece {
         addDirectionalMoves(board, myPosition, moves, directions, 1);
     }
 
-    // Add Queen moves (combination of rook and bishop moves)
     private void addQueenMoves(ChessBoard board, ChessPosition myPosition, List<ChessMove> moves) {
         int[][] directions = {
                 {1, 0}, {-1, 0}, {0, 1}, {0, -1},
@@ -81,7 +79,6 @@ public class ChessPiece {
         addDirectionalMoves(board, myPosition, moves, directions, 8);
     }
 
-    // Add Rook moves (horizontal and vertical lines)
     private void addRookMoves(ChessBoard board, ChessPosition myPosition, List<ChessMove> moves) {
         int[][] directions = {
                 {1, 0}, {-1, 0}, {0, 1}, {0, -1}
@@ -89,7 +86,6 @@ public class ChessPiece {
         addDirectionalMoves(board, myPosition, moves, directions, 8);
     }
 
-    // Add Bishop moves (diagonal lines)
     private void addBishopMoves(ChessBoard board, ChessPosition myPosition, List<ChessMove> moves) {
         int[][] directions = {
                 {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
@@ -97,7 +93,6 @@ public class ChessPiece {
         addDirectionalMoves(board, myPosition, moves, directions, 8);
     }
 
-    // Add Knight moves (L-shaped jumps)
     private void addKnightMoves(ChessBoard board, ChessPosition myPosition, List<ChessMove> moves) {
         int[][] knightMoves = {
                 {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
@@ -110,13 +105,11 @@ public class ChessPiece {
         }
     }
 
-    // Add Pawn moves (including capturing and promotion)
     private void addPawnMoves(ChessBoard board, ChessPosition myPosition, List<ChessMove> moves) {
         int direction = (pieceColor == ChessGame.TeamColor.WHITE) ? 1 : -1;
         ChessPosition forwardOne = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn());
         if (board.getPiece(forwardOne) == null) {
             addMoveWithPromotion(board, myPosition, forwardOne, moves);
-            // First move can be two squares
             if ((pieceColor == ChessGame.TeamColor.WHITE && myPosition.getRow() == 2)
                     || (pieceColor == ChessGame.TeamColor.BLACK && myPosition.getRow() == 7)) {
                 ChessPosition forwardTwo = new ChessPosition(myPosition.getRow() + 2 * direction, myPosition.getColumn());
@@ -126,21 +119,18 @@ public class ChessPiece {
             }
         }
 
-        // Capture diagonally
         ChessPosition captureLeft = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn() - 1);
         ChessPosition captureRight = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn() + 1);
         addMoveIfEnemy(board, myPosition, captureLeft, moves);
         addMoveIfEnemy(board, myPosition, captureRight, moves);
     }
 
-    // Helper method to add a move if valid and not blocked by friendly pieces
     private void addMoveIfValid(ChessBoard board, ChessPosition from, ChessPosition to, List<ChessMove> moves) {
         if (isWithinBounds(to) && (board.getPiece(to) == null || board.getPiece(to).getTeamColor() != pieceColor)) {
             moves.add(new ChessMove(from, to, null));
         }
     }
 
-    // Helper method to add a move if the target square is occupied by an enemy piece
     private void addMoveIfEnemy(ChessBoard board, ChessPosition from, ChessPosition to, List<ChessMove> moves) {
         ChessPiece target = board.getPiece(to);
         if (isWithinBounds(to) && target != null && target.getTeamColor() != pieceColor) {
@@ -148,7 +138,6 @@ public class ChessPiece {
         }
     }
 
-    // Helper method to add a move considering pawn promotion
     private void addMoveWithPromotion(ChessBoard board, ChessPosition from, ChessPosition to, List<ChessMove> moves) {
         if ((pieceColor == ChessGame.TeamColor.WHITE && to.getRow() == 8)
                 || (pieceColor == ChessGame.TeamColor.BLACK && to.getRow() == 1)) {
@@ -161,7 +150,6 @@ public class ChessPiece {
         }
     }
 
-    // Helper method to add moves in specific directions (linear moves)
     private void addDirectionalMoves(ChessBoard board, ChessPosition from, List<ChessMove> moves, int[][] directions, int maxDistance) {
         for (int[] direction : directions) {
             int rowOffset = direction[0];
@@ -173,9 +161,9 @@ public class ChessPiece {
                     moves.add(new ChessMove(from, current, null));
                 } else if (board.getPiece(current).getTeamColor() != pieceColor) {
                     moves.add(new ChessMove(from, current, null));
-                    break; // Stop on enemy piece
+                    break;
                 } else {
-                    break; // Stop on friendly piece
+                    break;
                 }
                 current = new ChessPosition(current.getRow() + rowOffset, current.getColumn() + colOffset);
                 distance++;
@@ -183,7 +171,6 @@ public class ChessPiece {
         }
     }
 
-    // Check if a given position is within the chessboard bounds
     private boolean isWithinBounds(ChessPosition position) {
         int row = position.getRow();
         int col = position.getColumn();
