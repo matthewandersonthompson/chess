@@ -2,34 +2,37 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ChessGame {
     private ChessBoard board;
     private TeamColor currentTurn;
-    private ChessPiece capturedPiece;  // To store the captured piece during a move
+    private Map<ChessMove, ChessPiece> capturedPieces;  // To store the captured piece during a move
 
     public ChessGame() {
         this.board = new ChessBoard(); // Assuming ChessBoard is properly initialized elsewhere
         this.board.resetBoard(); // Setup the board with initial piece placement
         this.currentTurn = TeamColor.WHITE; // White starts the game
+        this.capturedPieces = new HashMap<>(); // Initialize the map for captured pieces
     }
 
     public Collection<ChessMove> validMoves(ChessPosition position) {
         Collection<ChessMove> moves = new ArrayList<>();
         if (board.isPositionValid(position)) {
             ChessPiece piece = board.getPiece(position);
-            if (piece != null && piece.getTeamColor() == currentTurn) {
+            if (piece != null) {
                 moves = piece.pieceMoves(board, position);
                 // Filter out moves that would leave the king in check
-                moves.removeIf(this::leavesKingInCheck);
+                moves.removeIf(move -> leavesKingInCheck(piece.getTeamColor(), move));
             }
         }
         return moves;
     }
 
-    private boolean leavesKingInCheck(ChessMove move) {
+    private boolean leavesKingInCheck(TeamColor teamColor, ChessMove move) {
         executeMove(move);
-        boolean inCheck = isInCheck(currentTurn);
+        boolean inCheck = isInCheck(teamColor);
         undoMove(move);
         return inCheck;
     }
@@ -44,8 +47,8 @@ public class ChessGame {
         }
 
         // Check if the move is legal by confirming it's in the collection of valid moves
-        Collection<ChessMove> validMoves = piece.pieceMoves(board, start);
-        if (!validMoves.contains(move) || leavesKingInCheck(move)) {
+        Collection<ChessMove> validMoves = validMoves(start);
+        if (!validMoves.contains(move) || leavesKingInCheck(currentTurn, move)) {
             throw new InvalidMoveException("Invalid move for the piece at the given position.");
         }
 
@@ -151,7 +154,7 @@ public class ChessGame {
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
         ChessPiece piece = board.getPiece(start);
-        capturedPiece = board.getPiece(end);  // Store the captured piece
+        capturedPieces.put(move, board.getPiece(end));  // Store the captured piece
         // Check if the move includes a promotion
         if (move.getPromotion() != null && (end.getRow() == 1 || end.getRow() == 8)) {
             // If there's a promotion, create a new piece of the promoted type at the destination
@@ -166,7 +169,7 @@ public class ChessGame {
         ChessPosition end = move.getEndPosition();
         ChessPiece piece = board.getPiece(end);
         board.setPiece(start, piece);
-        board.setPiece(end, capturedPiece);  // Restore the captured piece
+        board.setPiece(end, capturedPieces.remove(move));  // Restore the captured piece
     }
 
     private void toggleTurn() {
