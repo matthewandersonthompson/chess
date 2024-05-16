@@ -191,6 +191,7 @@ public class MakeMoveTests {
         var pawnEndPosition = new ChessPosition(6, 2);
         game.makeMove(new ChessMove(pawnStartPosition, pawnEndPosition, null));
 
+        System.out.println(game.getBoard());
         Assertions.assertEquals(loadBoard("""
                 | |k| | | | | | |
                 | | | | | | | | |

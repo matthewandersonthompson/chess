@@ -1,16 +1,23 @@
 package chess;
 
-import java.util.Objects;
-
 public class ChessMove {
-    private final ChessPosition startPosition;
-    private final ChessPosition endPosition;
-    private final ChessPiece.PieceType promotionPiece;
 
-    public ChessMove(ChessPosition startPosition, ChessPosition endPosition, ChessPiece.PieceType promotionPiece) {
+    private ChessPosition startPosition;
+    private ChessPosition endPosition;
+    private ChessPiece.PieceType promotionPieceType; // Add this field
+
+    // Constructor without promotion
+    public ChessMove(ChessPosition startPosition, ChessPosition endPosition) {
         this.startPosition = startPosition;
         this.endPosition = endPosition;
-        this.promotionPiece = promotionPiece;
+        this.promotionPieceType = null; // Default to null if not a promotion move
+    }
+
+    // Constructor with promotion
+    public ChessMove(ChessPosition startPosition, ChessPosition endPosition, ChessPiece.PieceType promotionPieceType) {
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+        this.promotionPieceType = promotionPieceType; // Set the promotion piece type
     }
 
     public ChessPosition getStartPosition() {
@@ -21,28 +28,27 @@ public class ChessMove {
         return endPosition;
     }
 
-    public ChessPiece.PieceType getPromotionPiece() {
-        return promotionPiece;
+    public ChessPiece.PieceType getPromotionPieceType() {
+        return promotionPieceType;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        ChessMove that = (ChessMove) obj;
-        return Objects.equals(startPosition, that.startPosition) &&
-                Objects.equals(endPosition, that.endPosition) &&
-                promotionPiece == that.promotionPiece;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ChessMove chessMove = (ChessMove) o;
+
+        if (!startPosition.equals(chessMove.startPosition)) return false;
+        if (!endPosition.equals(chessMove.endPosition)) return false;
+        return promotionPieceType == chessMove.promotionPieceType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(startPosition, endPosition, promotionPiece);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Move from %s to %s%s", startPosition, endPosition,
-                promotionPiece != null ? String.format(" promoting to %s", promotionPiece) : "");
+        int result = startPosition.hashCode();
+        result = 31 * result + endPosition.hashCode();
+        result = 31 * result + (promotionPieceType != null ? promotionPieceType.hashCode() : 0);
+        return result;
     }
 }
