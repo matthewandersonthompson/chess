@@ -73,7 +73,7 @@ public class ChessPiece {
                     moves.add(new ChessMove(position, current, null));
                     break;
                 } else {
-                    break; // Stop if we encounter a piece of the same color
+                    break;
                 }
                 current = new ChessPosition(current.getRow() + direction[0], current.getColumn() + direction[1]);
                 distance++;

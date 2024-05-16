@@ -8,13 +8,13 @@ import java.util.Map;
 public class ChessGame {
     private ChessBoard board;
     private TeamColor currentTurn;
-    private Map<ChessMove, ChessPiece> capturedPieces;  // To store the captured piece during a move
+    private Map<ChessMove, ChessPiece> capturedPieces;
 
     public ChessGame() {
-        this.board = new ChessBoard(); // Assuming ChessBoard is properly initialized elsewhere
-        this.board.resetBoard(); // Setup the board with initial piece placement
-        this.currentTurn = TeamColor.WHITE; // White starts the game
-        this.capturedPieces = new HashMap<>(); // Initialize the map for captured pieces
+        this.board = new ChessBoard();
+        this.board.resetBoard();
+        this.currentTurn = TeamColor.WHITE;
+        this.capturedPieces = new HashMap<>();
     }
 
     public Collection<ChessMove> validMoves(ChessPosition position) {
@@ -23,7 +23,6 @@ public class ChessGame {
             ChessPiece piece = board.getPiece(position);
             if (piece != null) {
                 moves = piece.pieceMoves(board, position);
-                // Filter out moves that would leave the king in check
                 moves.removeIf(move -> leavesKingInCheck(piece.getTeamColor(), move));
             }
         }
@@ -46,7 +45,6 @@ public class ChessGame {
             throw new InvalidMoveException("No piece at the start position or not your turn.");
         }
 
-        // Check if the move is legal by confirming it's in the collection of valid moves
         Collection<ChessMove> validMoves = validMoves(start);
         if (!validMoves.contains(move) || leavesKingInCheck(currentTurn, move)) {
             throw new InvalidMoveException("Invalid move for the piece at the given position.");
@@ -68,7 +66,7 @@ public class ChessGame {
 
     public boolean isInCheckmate(TeamColor teamColor) {
         if (!isInCheck(teamColor)) {
-            return false; // Not in check, so cannot be in checkmate.
+            return false;
         }
 
         return !hasAnyValidMove(teamColor);
@@ -76,7 +74,7 @@ public class ChessGame {
 
     public boolean isInStalemate(TeamColor teamColor) {
         if (isInCheck(teamColor)) {
-            return false; // If in check, it's not a stalemate.
+            return false;
         }
 
         return !hasAnyValidMove(teamColor);
@@ -154,10 +152,8 @@ public class ChessGame {
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
         ChessPiece piece = board.getPiece(start);
-        capturedPieces.put(move, board.getPiece(end));  // Store the captured piece
-        // Check if the move includes a promotion
+        capturedPieces.put(move, board.getPiece(end));
         if (move.getPromotion() != null && (end.getRow() == 1 || end.getRow() == 8)) {
-            // If there's a promotion, create a new piece of the promoted type at the destination
             piece = new ChessPiece(piece.getTeamColor(), move.getPromotion());
         }
         board.setPiece(end, piece);
@@ -169,7 +165,7 @@ public class ChessGame {
         ChessPosition end = move.getEndPosition();
         ChessPiece piece = board.getPiece(end);
         board.setPiece(start, piece);
-        board.setPiece(end, capturedPieces.remove(move));  // Restore the captured piece
+        board.setPiece(end, capturedPieces.remove(move));
     }
 
     private void toggleTurn() {
