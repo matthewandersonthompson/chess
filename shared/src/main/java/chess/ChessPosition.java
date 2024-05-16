@@ -11,6 +11,7 @@ public class ChessPosition {
         this.col = col;
     }
 
+
     public int getRow() {
         return row;
     }
@@ -20,10 +21,10 @@ public class ChessPosition {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        ChessPosition that = (ChessPosition) obj;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessPosition that = (ChessPosition) o;
         return row == that.row && col == that.col;
     }
 
@@ -34,6 +35,7 @@ public class ChessPosition {
 
     @Override
     public String toString() {
-        return String.format("(%d, %d)", row, col);
+        char columnLetter = (char) ('a' + col -1);
+        return String.format("%c%d", columnLetter, row);
     }
 }
