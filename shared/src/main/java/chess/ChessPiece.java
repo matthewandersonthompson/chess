@@ -72,6 +72,8 @@ public class ChessPiece {
                 } else if (target.getTeamColor() != color) {
                     moves.add(new ChessMove(position, current, null));
                     break;
+                } else {
+                    break; // Stop if we encounter a piece of the same color
                 }
                 current = new ChessPosition(current.getRow() + direction[0], current.getColumn() + direction[1]);
                 distance++;

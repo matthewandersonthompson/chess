@@ -3,8 +3,6 @@ package chess;
 import java.util.Objects;
 import chess.ChessPiece.PieceType;
 
-
-
 public class ChessMove {
     private final ChessPosition start;
     private final ChessPosition end;
@@ -45,5 +43,4 @@ public class ChessMove {
     public String toString() {
         return String.format("move from %s to %s%s", start, end, promotion != null ? String.format("promoted to %s", promotion): "");
     }
-
 }

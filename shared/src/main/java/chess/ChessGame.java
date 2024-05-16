@@ -6,6 +6,7 @@ import java.util.Collection;
 public class ChessGame {
     private ChessBoard board;
     private TeamColor currentTurn;
+    private ChessPiece capturedPiece;  // To store the captured piece during a move
 
     public ChessGame() {
         this.board = new ChessBoard(); // Assuming ChessBoard is properly initialized elsewhere
@@ -14,13 +15,23 @@ public class ChessGame {
     }
 
     public Collection<ChessMove> validMoves(ChessPosition position) {
+        Collection<ChessMove> moves = new ArrayList<>();
         if (board.isPositionValid(position)) {
             ChessPiece piece = board.getPiece(position);
             if (piece != null && piece.getTeamColor() == currentTurn) {
-                return piece.pieceMoves(board, position);
+                moves = piece.pieceMoves(board, position);
+                // Filter out moves that would leave the king in check
+                moves.removeIf(this::leavesKingInCheck);
             }
         }
-        return new ArrayList<>(); // Return an empty collection if no valid moves
+        return moves;
+    }
+
+    private boolean leavesKingInCheck(ChessMove move) {
+        executeMove(move);
+        boolean inCheck = isInCheck(currentTurn);
+        undoMove(move);
+        return inCheck;
     }
 
     public void makeMove(ChessMove move) throws InvalidMoveException {
@@ -34,13 +45,8 @@ public class ChessGame {
 
         // Check if the move is legal by confirming it's in the collection of valid moves
         Collection<ChessMove> validMoves = piece.pieceMoves(board, start);
-        if (!validMoves.contains(move)) {
+        if (!validMoves.contains(move) || leavesKingInCheck(move)) {
             throw new InvalidMoveException("Invalid move for the piece at the given position.");
-        }
-
-        // Check if the move passes through other pieces (excluding knight moves)
-        if (piece.getPieceType() != ChessPiece.PieceType.KNIGHT && passesThroughOtherPieces(start, end)) {
-            throw new InvalidMoveException("Move cannot pass through other pieces.");
         }
 
         executeMove(move);
@@ -50,24 +56,6 @@ public class ChessGame {
         }
 
         toggleTurn();
-    }
-
-    private boolean passesThroughOtherPieces(ChessPosition start, ChessPosition end) {
-        int rowStep = Integer.compare(end.getRow(), start.getRow());
-        int colStep = Integer.compare(end.getColumn(), start.getColumn());
-
-        int currentRow = start.getRow() + rowStep;
-        int currentCol = start.getColumn() + colStep;
-
-        while (currentRow != end.getRow() || currentCol != end.getColumn()) {
-            ChessPosition currentPosition = new ChessPosition(currentRow, currentCol);
-            if (board.getPiece(currentPosition) != null) {
-                return true; // There is a piece in the way
-            }
-            currentRow += rowStep;
-            currentCol += colStep;
-        }
-        return false; // No pieces in the way
     }
 
     public boolean isInCheck(TeamColor teamColor) {
@@ -163,6 +151,7 @@ public class ChessGame {
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
         ChessPiece piece = board.getPiece(start);
+        capturedPiece = board.getPiece(end);  // Store the captured piece
         // Check if the move includes a promotion
         if (move.getPromotion() != null && (end.getRow() == 1 || end.getRow() == 8)) {
             // If there's a promotion, create a new piece of the promoted type at the destination
@@ -177,7 +166,7 @@ public class ChessGame {
         ChessPosition end = move.getEndPosition();
         ChessPiece piece = board.getPiece(end);
         board.setPiece(start, piece);
-        board.removePiece(end);
+        board.setPiece(end, capturedPiece);  // Restore the captured piece
     }
 
     private void toggleTurn() {

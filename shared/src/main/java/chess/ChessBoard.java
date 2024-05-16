@@ -108,6 +108,4 @@ public class ChessBoard {
             board[position.getRow() - 1][position.getColumn() - 1] = null;
         }
     }
-
-
 }
