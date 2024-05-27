@@ -1,0 +1,61 @@
+package service;
+
+import dataaccess.DataAccessException;
+import dataaccess.InMemoryDataAccess;
+import model.GameData;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class GameServiceTest {
+    private GameService gameService;
+    private InMemoryDataAccess dataAccess;
+
+    @BeforeEach
+    void setUp() {
+        dataAccess = new InMemoryDataAccess();
+        gameService = new GameService(dataAccess);
+    }
+
+    @Test
+    void testCreateGameSuccess() throws DataAccessException {
+        GameData game = gameService.createGame("Test Game");
+        assertNotNull(game);
+        assertEquals("Test Game", game.gameName());
+    }
+
+    @Test
+    void testJoinGameSuccess() throws DataAccessException {
+        GameData game = gameService.createGame("Test Game");
+        gameService.joinGame(game.gameID(), "user1", "WHITE");
+        GameData updatedGame = dataAccess.getGame(game.gameID());
+        assertEquals("user1", updatedGame.whiteUsername());
+    }
+
+    @Test
+    void testJoinGameInvalidColor() {
+        GameData game = gameService.createGame("Test Game");
+        assertThrows(DataAccessException.class, () -> {
+            gameService.joinGame(game.gameID(), "user1", "INVALID");
+        });
+    }
+
+    @Test
+    void testListGamesSuccess() throws DataAccessException {
+        gameService.createGame("Test Game 1");
+        gameService.createGame("Test Game 2");
+        List<GameData> games = gameService.listGames();
+        assertEquals(2, games.size());
+    }
+
+    @Test
+    void testClearSuccess() throws DataAccessException {
+        gameService.createGame("Test Game");
+        gameService.clear();
+        List<GameData> games = gameService.listGames();
+        assertTrue(games.isEmpty());
+    }
+}
