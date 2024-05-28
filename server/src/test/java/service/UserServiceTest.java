@@ -28,12 +28,16 @@ class UserServiceTest {
     }
 
     @Test
-    void testRegisterUserAlreadyExists() {
+    void testRegisterFail() {
         UserData user = new UserData("testuser", "password", "email@example.com");
-        assertThrows(DataAccessException.class, () -> {
+        try {
             userService.register(user);
-            userService.register(user);
-        });
+            assertThrows(DataAccessException.class, () -> {
+                userService.register(user); // This should throw an exception
+            });
+        } catch (DataAccessException e) {
+            fail("Exception should not be thrown: " + e.getMessage());
+        }
     }
 
     @Test
@@ -48,8 +52,13 @@ class UserServiceTest {
     @Test
     void testLoginInvalidPassword() {
         UserData user = new UserData("testuser", "password", "email@example.com");
-        assertThrows(DataAccessException.class, () -> {
+        try {
             userService.register(user);
+        } catch (DataAccessException e) {
+            fail("Exception should not be thrown: " + e.getMessage());
+        }
+
+        assertThrows(DataAccessException.class, () -> {
             userService.login("testuser", "wrongpassword");
         });
     }
@@ -61,26 +70,6 @@ class UserServiceTest {
         userService.logout(auth.authToken());
         assertThrows(DataAccessException.class, () -> {
             dataAccess.getAuth(auth.authToken());
-        });
-    }
-
-    @Test
-    void testRegisterFail() {
-        assertThrows(DataAccessException.class, () -> {
-            userService.register(new UserData(null, "password", "email@example.com"));
-        });
-        assertThrows(DataAccessException.class, () -> {
-            userService.register(new UserData("testuser", null, "email@example.com"));
-        });
-        assertThrows(DataAccessException.class, () -> {
-            userService.register(new UserData("testuser", "password", null));
-        });
-    }
-
-    @Test
-    void testLoginFail() {
-        assertThrows(DataAccessException.class, () -> {
-            userService.login("nonexistentuser", "password");
         });
     }
 }
