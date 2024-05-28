@@ -14,7 +14,9 @@ public class Server {
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
-        Spark.staticFiles.location("web");
+
+        // Set the static files location to "web" within the resources directory
+        Spark.staticFiles.location("/web");
 
         // Initialize Gson
         Gson gson = new Gson();

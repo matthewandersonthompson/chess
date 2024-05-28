@@ -18,6 +18,7 @@ public class InMemoryDataAccess implements DataAccessInterface {
         users.clear();
         games.clear();
         authTokens.clear();
+        gameIDGenerator.set(1); // Reset the game ID generator
     }
 
     @Override
@@ -43,7 +44,7 @@ public class InMemoryDataAccess implements DataAccessInterface {
         if (games.containsKey(gameID)) {
             throw new DataAccessException("Game already exists");
         }
-        game.setGameID(gameID);
+        game.setGameID(gameID); // Set the gameID inside the GameData object
         games.put(gameID, game);
     }
 
@@ -91,5 +92,10 @@ public class InMemoryDataAccess implements DataAccessInterface {
         if (authTokens.remove(authToken) == null) {
             throw new DataAccessException("Auth token not found");
         }
+    }
+
+    @Override
+    public int getLatestGameID() {
+        return gameIDGenerator.get() - 1; // The latest ID would be the last incremented value
     }
 }

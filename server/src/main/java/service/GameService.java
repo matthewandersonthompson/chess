@@ -17,6 +17,7 @@ public class GameService {
     public GameData createGame(String gameName) throws DataAccessException {
         GameData gameData = new GameData(0, null, null, gameName, new ChessGame());
         dataAccess.createGame(gameData);
+        gameData.setGameID(dataAccess.getLatestGameID());
         return gameData;
     }
 

@@ -62,7 +62,7 @@ public class GameHandler {
             int status = switch (e.getMessage()) {
                 case "Auth token not found" -> 401;
                 case "Game not found" -> 400;
-                case "White player already taken", "Black player already taken", "Invalid player color" -> 403;
+                case "White player already taken", "Black player already taken" -> 403;
                 default -> 400;
             };
             res.status(status);
