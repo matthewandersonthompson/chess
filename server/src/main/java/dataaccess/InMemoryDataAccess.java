@@ -5,11 +5,13 @@ import model.GameData;
 import model.AuthData;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class InMemoryDataAccess implements DataAccessInterface {
     private final Map<String, UserData> users = new HashMap<>();
     private final Map<Integer, GameData> games = new HashMap<>();
     private final Map<String, AuthData> authTokens = new HashMap<>();
+    private final AtomicInteger gameIDGenerator = new AtomicInteger(1); // Unique game ID generator
 
     @Override
     public void clear() {
@@ -37,10 +39,12 @@ public class InMemoryDataAccess implements DataAccessInterface {
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
-        if (games.containsKey(game.getGameID())) {
+        int gameID = gameIDGenerator.getAndIncrement();
+        if (games.containsKey(gameID)) {
             throw new DataAccessException("Game already exists");
         }
-        games.put(game.getGameID(), game);
+        game.setGameID(gameID);
+        games.put(gameID, game);
     }
 
     @Override

@@ -6,7 +6,6 @@ import model.GameData;
 import chess.ChessGame;
 
 import java.util.List;
-import java.util.UUID;
 
 public class GameService {
     private final DataAccessInterface dataAccess;
@@ -16,8 +15,7 @@ public class GameService {
     }
 
     public GameData createGame(String gameName) throws DataAccessException {
-        int gameID = UUID.randomUUID().hashCode();
-        GameData gameData = new GameData(gameID, null, null, gameName, new ChessGame());
+        GameData gameData = new GameData(0, null, null, gameName, new ChessGame());
         dataAccess.createGame(gameData);
         return gameData;
     }
