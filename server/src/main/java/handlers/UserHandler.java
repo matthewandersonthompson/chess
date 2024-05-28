@@ -5,7 +5,6 @@ import dataaccess.DataAccessException;
 import model.UserData;
 import requests.RegisterRequest;
 import requests.LoginRequest;
-import requests.LogoutRequest;
 import results.RegisterResult;
 import results.LoginResult;
 import service.UserService;
@@ -17,13 +16,18 @@ public class UserHandler {
     private UserService userService;
     private final Gson gson = new Gson();
 
-    // Constructor to initialize userService
     public UserHandler(UserService userService) {
         this.userService = userService;
     }
 
     public Route handleRegister = (Request req, Response res) -> {
         RegisterRequest request = gson.fromJson(req.body(), RegisterRequest.class);
+        if (request.username() == null || request.username().isEmpty() ||
+                request.password() == null || request.password().isEmpty() ||
+                request.email() == null || request.email().isEmpty()) {
+            res.status(400);
+            return gson.toJson(new ErrorResponse("Error: Missing required fields"));
+        }
         try {
             var user = new UserData(request.username(), request.password(), request.email());
             var auth = userService.register(user);

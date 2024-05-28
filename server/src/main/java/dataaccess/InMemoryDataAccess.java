@@ -37,10 +37,10 @@ public class InMemoryDataAccess implements DataAccessInterface {
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
-        if (games.containsKey(game.gameID())) {
+        if (games.containsKey(game.getGameID())) {
             throw new DataAccessException("Game already exists");
         }
-        games.put(game.gameID(), game);
+        games.put(game.getGameID(), game);
     }
 
     @Override
@@ -59,10 +59,10 @@ public class InMemoryDataAccess implements DataAccessInterface {
 
     @Override
     public void updateGame(GameData game) throws DataAccessException {
-        if (!games.containsKey(game.gameID())) {
+        if (!games.containsKey(game.getGameID())) {
             throw new DataAccessException("Game not found");
         }
-        games.put(game.gameID(), game);
+        games.put(game.getGameID(), game);
     }
 
     @Override

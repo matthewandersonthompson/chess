@@ -25,7 +25,7 @@ class GameServiceTest {
         try {
             GameData game = gameService.createGame("Test Game");
             assertNotNull(game);
-            assertEquals("Test Game", game.gameName());
+            assertEquals("Test Game", game.getGameName());
         } catch (DataAccessException e) {
             fail("Exception should not be thrown: " + e.getMessage());
         }
@@ -35,9 +35,9 @@ class GameServiceTest {
     void testJoinGameSuccess() {
         try {
             GameData game = gameService.createGame("Test Game");
-            gameService.joinGame(game.gameID(), "user1", "WHITE");
-            GameData updatedGame = dataAccess.getGame(game.gameID());
-            assertEquals("user1", updatedGame.whiteUsername());
+            gameService.joinGame(game.getGameID(), "user1", "WHITE");
+            GameData updatedGame = dataAccess.getGame(game.getGameID());
+            assertEquals("user1", updatedGame.getWhiteUsername());
         } catch (DataAccessException e) {
             fail("Exception should not be thrown: " + e.getMessage());
         }
@@ -54,7 +54,7 @@ class GameServiceTest {
 
         GameData finalGame = game;
         assertThrows(DataAccessException.class, () -> {
-            gameService.joinGame(finalGame.gameID(), "user1", "INVALID");
+            gameService.joinGame(finalGame.getGameID(), "user1", "INVALID");
         });
     }
 

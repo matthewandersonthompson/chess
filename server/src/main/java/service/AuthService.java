@@ -13,6 +13,9 @@ public class AuthService {
 
     public String validateAuthToken(String authToken) throws DataAccessException {
         AuthData authData = dataAccess.getAuth(authToken);
+        if (authData == null) {
+            throw new DataAccessException("Auth token not found");
+        }
         return authData.username();
     }
 }

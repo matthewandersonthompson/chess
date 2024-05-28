@@ -24,16 +24,20 @@ public class GameService {
 
     public void joinGame(int gameID, String username, String playerColor) throws DataAccessException {
         GameData gameData = dataAccess.getGame(gameID);
+        if (gameData == null) {
+            throw new DataAccessException("Game not found");
+        }
+
         if (playerColor.equalsIgnoreCase("WHITE")) {
-            if (gameData.whiteUsername() != null) {
+            if (gameData.getWhiteUsername() != null) {
                 throw new DataAccessException("White player already taken");
             }
-            gameData = new GameData(gameData.gameID(), username, gameData.blackUsername(), gameData.gameName(), gameData.game());
+            gameData.setWhiteUsername(username);
         } else if (playerColor.equalsIgnoreCase("BLACK")) {
-            if (gameData.blackUsername() != null) {
+            if (gameData.getBlackUsername() != null) {
                 throw new DataAccessException("Black player already taken");
             }
-            gameData = new GameData(gameData.gameID(), gameData.whiteUsername(), username, gameData.gameName(), gameData.game());
+            gameData.setBlackUsername(username);
         } else {
             throw new DataAccessException("Invalid player color");
         }
