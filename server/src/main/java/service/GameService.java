@@ -17,7 +17,6 @@ public class GameService {
     public GameData createGame(String gameName) throws DataAccessException {
         GameData gameData = new GameData(0, null, null, gameName, new ChessGame());
         dataAccess.createGame(gameData);
-        gameData.setGameID(dataAccess.getLatestGameID());
         return gameData;
     }
 
@@ -25,6 +24,10 @@ public class GameService {
         GameData gameData = dataAccess.getGame(gameID);
         if (gameData == null) {
             throw new DataAccessException("Game not found");
+        }
+
+        if (playerColor == null) {
+            throw new DataAccessException("Invalid player color");
         }
 
         if (playerColor.equalsIgnoreCase("WHITE")) {
