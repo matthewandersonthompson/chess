@@ -81,4 +81,29 @@ class GameServiceTest {
             fail("Exception should not be thrown: " + e.getMessage());
         }
     }
+
+    @Test
+    void testCreateGameFail() {
+        try {
+            dataAccess.createGame(new GameData(1, null, null, "Existing Game", null));
+            assertThrows(DataAccessException.class, () -> {
+                gameService.createGame("Existing Game");
+            });
+        } catch (DataAccessException e) {
+            fail("Exception should not be thrown during setup: " + e.getMessage());
+        }
+    }
+
+    @Test
+    void testJoinGameUserAlreadyExists() {
+        try {
+            GameData game = gameService.createGame("Test Game");
+            gameService.joinGame(game.getGameID(), "user1", "WHITE");
+            assertThrows(DataAccessException.class, () -> {
+                gameService.joinGame(game.getGameID(), "user2", "WHITE");
+            });
+        } catch (DataAccessException e) {
+            fail("Exception should not be thrown: " + e.getMessage());
+        }
+    }
 }

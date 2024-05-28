@@ -18,4 +18,12 @@ public class AuthService {
         }
         return authData.username();
     }
+
+    public void createAuth(AuthData auth) throws DataAccessException {
+        dataAccess.createAuth(auth);
+    }
+
+    public void deleteAuth(String authToken) throws DataAccessException {
+        dataAccess.deleteAuth(authToken);
+    }
 }

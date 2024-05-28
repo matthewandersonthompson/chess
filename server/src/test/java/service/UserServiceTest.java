@@ -63,4 +63,24 @@ class UserServiceTest {
             dataAccess.getAuth(auth.authToken());
         });
     }
+
+    @Test
+    void testRegisterFail() {
+        assertThrows(DataAccessException.class, () -> {
+            userService.register(new UserData(null, "password", "email@example.com"));
+        });
+        assertThrows(DataAccessException.class, () -> {
+            userService.register(new UserData("testuser", null, "email@example.com"));
+        });
+        assertThrows(DataAccessException.class, () -> {
+            userService.register(new UserData("testuser", "password", null));
+        });
+    }
+
+    @Test
+    void testLoginFail() {
+        assertThrows(DataAccessException.class, () -> {
+            userService.login("nonexistentuser", "password");
+        });
+    }
 }
