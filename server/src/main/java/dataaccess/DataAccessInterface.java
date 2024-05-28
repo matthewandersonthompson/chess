@@ -27,5 +27,5 @@ public interface DataAccessInterface {
 
     void deleteAuth(String authToken) throws DataAccessException;
 
-    int getLatestGameID() throws DataAccessException; // Add this line
+    int getLatestGameID() throws DataAccessException;
 }

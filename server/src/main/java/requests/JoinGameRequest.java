@@ -2,11 +2,11 @@ package requests;
 
 public class JoinGameRequest {
     private String playerColor;
-    private int gameId;
+    private int gameID;
 
     public JoinGameRequest(String playerColor, int gameId) {
         this.playerColor = playerColor;
-        this.gameId = gameId;
+        this.gameID = gameId;
     }
 
     public String getPlayerColor() {
@@ -14,6 +14,6 @@ public class JoinGameRequest {
     }
 
     public int getGameId() {
-        return gameId;
+        return gameID;
     }
 }

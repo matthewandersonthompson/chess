@@ -44,7 +44,7 @@ public class InMemoryDataAccess implements DataAccessInterface {
         if (games.containsKey(gameID)) {
             throw new DataAccessException("Game already exists");
         }
-        game.setGameID(gameID); // Set the gameID inside the GameData object
+        game.setGameID(gameID);
         games.put(gameID, game);
     }
 
