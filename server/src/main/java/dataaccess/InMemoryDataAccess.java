@@ -11,14 +11,14 @@ public class InMemoryDataAccess implements DataAccessInterface {
     private final Map<String, UserData> users = new HashMap<>();
     private final Map<Integer, GameData> games = new HashMap<>();
     private final Map<String, AuthData> authTokens = new HashMap<>();
-    private final AtomicInteger gameIDGenerator = new AtomicInteger(1); // Unique game ID generator
+    private final AtomicInteger gameIDGenerator = new AtomicInteger(1);
 
     @Override
     public void clear() {
         users.clear();
         games.clear();
         authTokens.clear();
-        gameIDGenerator.set(1); // Reset the game ID generator
+        gameIDGenerator.set(1);
     }
 
     @Override
@@ -96,6 +96,6 @@ public class InMemoryDataAccess implements DataAccessInterface {
 
     @Override
     public int getLatestGameID() {
-        return gameIDGenerator.get() - 1; // The latest ID would be the last incremented value
+        return gameIDGenerator.get() - 1;
     }
 }

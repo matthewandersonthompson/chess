@@ -20,7 +20,7 @@ public class ClearHandler implements Route {
         try {
             gameService.clear();
             res.status(200);
-            return gson.toJson(new Object()); // Return an empty JSON object
+            return gson.toJson(new Object());
         } catch (DataAccessException e) {
             res.status(500);
             return gson.toJson(new ErrorResponse("Error: " + e.getMessage()));

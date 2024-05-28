@@ -15,13 +15,11 @@ public class UserService {
     }
 
     public AuthData register(UserData user) throws DataAccessException {
-        // Check if user already exists
         try {
             dataAccess.getUser(user.username());
             throw new DataAccessException("Username already taken");
         } catch (DataAccessException e) {
             if (e.getMessage().equals("User not found")) {
-                // User does not exist, proceed with registration
                 dataAccess.createUser(user);
                 String authToken = UUID.randomUUID().toString();
                 AuthData auth = new AuthData(authToken, user.username());
