@@ -3,6 +3,7 @@ package dataaccess;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
 public class DatabaseManager {
@@ -37,12 +38,42 @@ public class DatabaseManager {
      * Creates the database if it does not already exist.
      */
     public static void createDatabase() throws DataAccessException {
-        try {
-            var statement = "CREATE DATABASE IF NOT EXISTS " + DATABASE_NAME;
-            var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
-            try (var preparedStatement = conn.prepareStatement(statement)) {
-                preparedStatement.executeUpdate();
-            }
+        try (Connection conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            String createDB = "CREATE DATABASE IF NOT EXISTS " + DATABASE_NAME;
+            stmt.executeUpdate(createDB);
+
+            String useDB = "USE " + DATABASE_NAME;
+            stmt.executeUpdate(useDB);
+
+            String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY," +
+                    "username VARCHAR(255) UNIQUE NOT NULL," +
+                    "password VARCHAR(255) NOT NULL," +
+                    "email VARCHAR(255) UNIQUE NOT NULL" +
+                    ")";
+            stmt.executeUpdate(createUsersTable);
+
+            String createGamesTable = "CREATE TABLE IF NOT EXISTS games (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY," +
+                    "game_name VARCHAR(255) NOT NULL," +
+                    "white_player INT," +
+                    "black_player INT," +
+                    "game_state TEXT," +
+                    "FOREIGN KEY (white_player) REFERENCES users(id)," +
+                    "FOREIGN KEY (black_player) REFERENCES users(id)" +
+                    ")";
+            stmt.executeUpdate(createGamesTable);
+
+            String createMovesTable = "CREATE TABLE IF NOT EXISTS moves (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY," +
+                    "game_id INT," +
+                    "move VARCHAR(255) NOT NULL," +
+                    "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
+                    "FOREIGN KEY (game_id) REFERENCES games(id)" +
+                    ")";
+            stmt.executeUpdate(createMovesTable);
+
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
