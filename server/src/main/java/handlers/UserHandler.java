@@ -32,7 +32,7 @@ public class UserHandler {
             var user = new UserData(request.username(), request.password(), request.email());
             var auth = userService.register(user);
             res.status(200);
-            return gson.toJson(new RegisterResult(auth.username(), auth.authToken()));
+            return gson.toJson(new RegisterResult(auth.getUsername(), auth.getAuthToken()));
         } catch (DataAccessException e) {
             res.status(403);
             return gson.toJson(new ErrorResponse("Error: " + e.getMessage()));
@@ -44,7 +44,7 @@ public class UserHandler {
         try {
             var auth = userService.login(request.username(), request.password());
             res.status(200);
-            return gson.toJson(new LoginResult(auth.username(), auth.authToken()));
+            return gson.toJson(new LoginResult(auth.getUsername(), auth.getAuthToken()));
         } catch (DataAccessException e) {
             res.status(401);
             return gson.toJson(new ErrorResponse("Error: " + e.getMessage()));
