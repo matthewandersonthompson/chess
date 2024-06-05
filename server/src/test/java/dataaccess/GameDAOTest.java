@@ -25,11 +25,12 @@ class GameDAOTest {
 
     @Test
     void testCreateGameFail() {
-        GameData game = new GameData(0, "Test Game", 0, 0, "gameState");
+        GameData game1 = new GameData(0, "Test Game", 0, 0, "gameState");
+        GameData game2 = new GameData(0, "Test Game", 0, 0, "gameState");
         try {
-            dataAccess.createGame(game);
+            dataAccess.createGame(game1);
             assertThrows(DataAccessException.class, () -> {
-                dataAccess.createGame(game); // Should fail due to duplicate game ID
+                dataAccess.createGame(game2);
             });
         } catch (DataAccessException e) {
             fail("Exception should not be thrown: " + e.getMessage());

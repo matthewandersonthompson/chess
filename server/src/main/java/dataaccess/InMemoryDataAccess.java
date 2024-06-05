@@ -40,10 +40,14 @@ public class InMemoryDataAccess implements DataAccessInterface {
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
-        int gameID = gameIDGenerator.getAndIncrement();
-        if (games.containsKey(gameID)) {
-            throw new DataAccessException("Game already exists");
+        // Check for duplicate game names to simulate a conflict scenario
+        for (GameData existingGame : games.values()) {
+            if (existingGame.getGameName().equals(game.getGameName())) {
+                throw new DataAccessException("Game with this name already exists");
+            }
         }
+
+        int gameID = gameIDGenerator.getAndIncrement();
         game.setGameID(gameID);
         games.put(gameID, game);
     }
