@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.DatabaseManager;
 import dataaccess.InMemoryDataAccess;
 import service.AuthService;
 import service.GameService;
@@ -13,6 +14,14 @@ import spark.Spark;
 public class Server {
 
     public int run(int desiredPort) {
+        // Call createDatabase to ensure the database and tables are created
+        try {
+            DatabaseManager.createDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1; // Return an error code if database creation fails
+        }
+
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("/web");
