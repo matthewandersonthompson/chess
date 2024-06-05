@@ -88,7 +88,6 @@ public class DatabaseManager {
      * <code>
      * try (var conn = DbInfo.getConnection(databaseName)) {
      * // execute SQL statements.
-     * }
      * </code>
      */
     public static Connection getConnection() throws DataAccessException {

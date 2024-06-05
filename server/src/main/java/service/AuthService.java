@@ -16,7 +16,7 @@ public class AuthService {
         if (authData == null) {
             throw new DataAccessException("Auth token not found");
         }
-        return authData.username();
+        return authData.getUsername();
     }
 
     public void createAuth(AuthData auth) throws DataAccessException {

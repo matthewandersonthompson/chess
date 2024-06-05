@@ -24,7 +24,7 @@ class UserServiceTest {
         UserData user = new UserData("testuser", "password", "email@example.com");
         AuthData auth = userService.register(user);
         assertNotNull(auth);
-        assertEquals("testuser", auth.username());
+        assertEquals("testuser", auth.getUsername());
     }
 
     @Test
@@ -46,7 +46,7 @@ class UserServiceTest {
         userService.register(user);
         AuthData auth = userService.login("testuser", "password");
         assertNotNull(auth);
-        assertEquals("testuser", auth.username());
+        assertEquals("testuser", auth.getUsername());
     }
 
     @Test
@@ -67,9 +67,9 @@ class UserServiceTest {
     void testLogoutSuccess() throws DataAccessException {
         UserData user = new UserData("testuser", "password", "email@example.com");
         AuthData auth = userService.register(user);
-        userService.logout(auth.authToken());
+        userService.logout(auth.getAuthToken());
         assertThrows(DataAccessException.class, () -> {
-            dataAccess.getAuth(auth.authToken());
+            dataAccess.getAuth(auth.getAuthToken());
         });
     }
 }

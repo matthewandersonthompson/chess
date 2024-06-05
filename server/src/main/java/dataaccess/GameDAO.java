@@ -1,9 +1,9 @@
 package dataaccess;
 
-import model.Game;
+import model.GameData;
 
 public interface GameDAO {
-    void createGame(Game game) throws DataAccessException;
-    Game getGameById(int gameId) throws DataAccessException;
+    void createGame(GameData game) throws DataAccessException;
+    GameData getGameById(int gameId) throws DataAccessException;
     void clear() throws DataAccessException;
 }

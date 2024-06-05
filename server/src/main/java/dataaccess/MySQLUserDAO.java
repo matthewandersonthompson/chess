@@ -1,6 +1,6 @@
 package dataaccess;
 
-import model.User;
+import model.UserData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,7 +10,7 @@ import java.sql.SQLException;
 public class MySQLUserDAO implements UserDAO {
 
     @Override
-    public void createUser(User user) throws DataAccessException {
+    public void createUser(UserData user) throws DataAccessException {
         String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -24,15 +24,15 @@ public class MySQLUserDAO implements UserDAO {
     }
 
     @Override
-    public User getUserByUsername(String username) throws DataAccessException {
-        User user = null;
+    public UserData getUserByUsername(String username) throws DataAccessException {
+        UserData user = null;
         String sql = "SELECT * FROM users WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                user = new User(
+                user = new UserData(
                         rs.getString("username"),
                         rs.getString("password"),
                         rs.getString("email")

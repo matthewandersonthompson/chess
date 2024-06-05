@@ -16,13 +16,13 @@ public class UserService {
 
     public AuthData register(UserData user) throws DataAccessException {
         try {
-            dataAccess.getUser(user.username());
+            dataAccess.getUser(user.getUsername());
             throw new DataAccessException("Username already taken");
         } catch (DataAccessException e) {
             if (e.getMessage().equals("User not found")) {
                 dataAccess.createUser(user);
                 String authToken = UUID.randomUUID().toString();
-                AuthData auth = new AuthData(authToken, user.username());
+                AuthData auth = new AuthData(authToken, user.getUsername());
                 dataAccess.createAuth(auth);
                 return auth;
             } else {
@@ -33,7 +33,7 @@ public class UserService {
 
     public AuthData login(String username, String password) throws DataAccessException {
         UserData user = dataAccess.getUser(username);
-        if (user.password().equals(password)) {
+        if (user.getPassword().equals(password)) {
             String authToken = UUID.randomUUID().toString();
             AuthData auth = new AuthData(authToken, username);
             dataAccess.createAuth(auth);

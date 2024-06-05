@@ -23,10 +23,10 @@ public class InMemoryDataAccess implements DataAccessInterface {
 
     @Override
     public void createUser(UserData user) throws DataAccessException {
-        if (users.containsKey(user.username())) {
+        if (users.containsKey(user.getUsername())) {
             throw new DataAccessException("User already exists");
         }
-        users.put(user.username(), user);
+        users.put(user.getUsername(), user);
     }
 
     @Override
@@ -72,10 +72,10 @@ public class InMemoryDataAccess implements DataAccessInterface {
 
     @Override
     public void createAuth(AuthData auth) throws DataAccessException {
-        if (authTokens.containsKey(auth.authToken())) {
+        if (authTokens.containsKey(auth.getAuthToken())) {
             throw new DataAccessException("Auth token already exists");
         }
-        authTokens.put(auth.authToken(), auth);
+        authTokens.put(auth.getAuthToken(), auth);
     }
 
     @Override
