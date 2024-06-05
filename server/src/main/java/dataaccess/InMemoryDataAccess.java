@@ -7,7 +7,7 @@ import model.AuthData;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class InMemoryDataAccess implements DataAccessInterface {
+public class InMemoryDataAccess implements DataAccessInterface, UserDAO, GameDAO, AuthDAO {
     private final Map<String, UserData> users = new HashMap<>();
     private final Map<Integer, GameData> games = new HashMap<>();
     private final Map<String, AuthData> authTokens = new HashMap<>();
@@ -39,6 +39,11 @@ public class InMemoryDataAccess implements DataAccessInterface {
     }
 
     @Override
+    public UserData getUserByUsername(String username) throws DataAccessException {
+        return getUser(username);
+    }
+
+    @Override
     public void createGame(GameData game) throws DataAccessException {
         // Check for duplicate game names to simulate a conflict scenario
         for (GameData existingGame : games.values()) {
@@ -59,6 +64,11 @@ public class InMemoryDataAccess implements DataAccessInterface {
             throw new DataAccessException("Game not found");
         }
         return game;
+    }
+
+    @Override
+    public GameData getGameById(int gameID) throws DataAccessException {
+        return getGame(gameID);
     }
 
     @Override

@@ -35,11 +35,13 @@ public class GameService {
                 throw new DataAccessException("White player already taken");
             }
             gameData.setWhitePlayer(username.hashCode()); // using hashCode as a placeholder
+            gameData.setWhiteUsername(username);
         } else if (playerColor.equalsIgnoreCase("BLACK")) {
             if (gameData.getBlackPlayer() != 0) {
                 throw new DataAccessException("Black player already taken");
             }
             gameData.setBlackPlayer(username.hashCode()); // using hashCode as a placeholder
+            gameData.setBlackUsername(username);
         } else {
             throw new DataAccessException("Invalid player color");
         }

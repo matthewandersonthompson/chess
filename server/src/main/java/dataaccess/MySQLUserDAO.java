@@ -24,6 +24,11 @@ public class MySQLUserDAO implements UserDAO {
     }
 
     @Override
+    public UserData getUser(String username) throws DataAccessException {
+        return getUserByUsername(username);
+    }
+
+    @Override
     public UserData getUserByUsername(String username) throws DataAccessException {
         UserData user = null;
         String sql = "SELECT * FROM users WHERE username = ?";

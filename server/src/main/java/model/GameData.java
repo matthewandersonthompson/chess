@@ -5,6 +5,8 @@ public class GameData {
     private String gameName;
     private int whitePlayer;
     private int blackPlayer;
+    private String whiteUsername;
+    private String blackUsername;
     private String gameState;
 
     public GameData(int gameID, String gameName, int whitePlayer, int blackPlayer, String gameState) {
@@ -41,6 +43,22 @@ public class GameData {
 
     public void setBlackPlayer(int blackPlayer) {
         this.blackPlayer = blackPlayer;
+    }
+
+    public String getWhiteUsername() {
+        return whiteUsername;
+    }
+
+    public void setWhiteUsername(String whiteUsername) {
+        this.whiteUsername = whiteUsername;
+    }
+
+    public String getBlackUsername() {
+        return blackUsername;
+    }
+
+    public void setBlackUsername(String blackUsername) {
+        this.blackUsername = blackUsername;
     }
 
     public String getGameState() {
