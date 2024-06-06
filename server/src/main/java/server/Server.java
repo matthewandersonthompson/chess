@@ -2,7 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.DatabaseManager;
-import dataaccess.InMemoryDataAccess;
+import dataaccess.MySQLDataAccess;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
@@ -14,12 +14,11 @@ import spark.Spark;
 public class Server {
 
     public int run(int desiredPort) {
-        // Call createDatabase to ensure the database and tables are created
         try {
             DatabaseManager.createDatabase();
         } catch (Exception e) {
             e.printStackTrace();
-            return -1; // Return an error code if database creation fails
+            return -1;
         }
 
         Spark.port(desiredPort);
@@ -28,7 +27,7 @@ public class Server {
 
         Gson gson = new Gson();
 
-        var dataAccess = new InMemoryDataAccess();
+        var dataAccess = new MySQLDataAccess();
 
         var userService = new UserService(dataAccess);
         var gameService = new GameService(dataAccess);

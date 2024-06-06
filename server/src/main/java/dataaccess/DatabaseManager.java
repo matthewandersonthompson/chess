@@ -65,6 +65,13 @@ public class DatabaseManager {
                     ")";
             stmt.executeUpdate(createGamesTable);
 
+            String createAuthTokensTable = "CREATE TABLE IF NOT EXISTS auth_tokens (" +
+                    "auth_token VARCHAR(255) PRIMARY KEY," +
+                    "username VARCHAR(255) NOT NULL," +
+                    "FOREIGN KEY (username) REFERENCES users(username)" +
+                    ")";
+            stmt.executeUpdate(createAuthTokensTable);
+
             String createMovesTable = "CREATE TABLE IF NOT EXISTS moves (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY," +
                     "game_id INT," +
