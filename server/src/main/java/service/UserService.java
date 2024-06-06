@@ -4,8 +4,9 @@ import dataaccess.DataAccessInterface;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
-import java.util.UUID; // Add this import
+import java.util.UUID;
 
 public class UserService {
     private final DataAccessInterface dataAccess;
@@ -20,6 +21,9 @@ public class UserService {
             throw new DataAccessException("Username already taken");
         } catch (DataAccessException e) {
             if (e.getMessage().equals("User not found")) {
+                // Hash the password before storing it
+                String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+                user.setPassword(hashedPassword);
                 dataAccess.createUser(user);
                 String authToken = UUID.randomUUID().toString();
                 AuthData auth = new AuthData(authToken, user.getUsername());
@@ -33,7 +37,7 @@ public class UserService {
 
     public AuthData login(String username, String password) throws DataAccessException {
         UserData user = dataAccess.getUser(username);
-        if (user == null || !user.getPassword().equals(password)) {
+        if (user == null || !BCrypt.checkpw(password, user.getPassword())) {
             throw new DataAccessException("Invalid username or password");
         }
         String authToken = UUID.randomUUID().toString();

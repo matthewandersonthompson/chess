@@ -11,10 +11,13 @@ import service.UserService;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class UserHandler {
     private UserService userService;
     private final Gson gson = new Gson();
+    private static final Logger logger = LoggerFactory.getLogger(UserHandler.class);
 
     public UserHandler(UserService userService) {
         this.userService = userService;
@@ -41,11 +44,13 @@ public class UserHandler {
 
     public Route handleLogin = (Request req, Response res) -> {
         LoginRequest request = gson.fromJson(req.body(), LoginRequest.class);
+        logger.info("Login attempt for user: {}", request.username());
         try {
             var auth = userService.login(request.username(), request.password());
             res.status(200);
             return gson.toJson(new LoginResult(auth.getUsername(), auth.getAuthToken()));
         } catch (DataAccessException e) {
+            logger.error("Login failed for user: {} - {}", request.username(), e.getMessage());
             res.status(401);
             return gson.toJson(new ErrorResponse("Error: " + e.getMessage()));
         }
