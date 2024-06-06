@@ -2,10 +2,10 @@ package service;
 
 import dataaccess.DataAccessInterface;
 import dataaccess.DataAccessException;
-import model.UserData;
 import model.AuthData;
+import model.UserData;
 
-import java.util.UUID;
+import java.util.UUID; // Add this import
 
 public class UserService {
     private final DataAccessInterface dataAccess;
@@ -33,14 +33,13 @@ public class UserService {
 
     public AuthData login(String username, String password) throws DataAccessException {
         UserData user = dataAccess.getUser(username);
-        if (user.getPassword().equals(password)) {
-            String authToken = UUID.randomUUID().toString();
-            AuthData auth = new AuthData(authToken, username);
-            dataAccess.createAuth(auth);
-            return auth;
-        } else {
+        if (user == null || !user.getPassword().equals(password)) {
             throw new DataAccessException("Invalid username or password");
         }
+        String authToken = UUID.randomUUID().toString();
+        AuthData auth = new AuthData(authToken, username);
+        dataAccess.createAuth(auth);
+        return auth;
     }
 
     public void logout(String authToken) throws DataAccessException {

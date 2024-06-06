@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MySQLDataAccess implements DataAccessInterface {
+
     @Override
     public void clear() throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
@@ -51,7 +52,7 @@ public class MySQLDataAccess implements DataAccessInterface {
                             rs.getString("email")
                     );
                 } else {
-                    return null;
+                    throw new DataAccessException("User not found");
                 }
             }
         } catch (SQLException e) {
@@ -98,7 +99,7 @@ public class MySQLDataAccess implements DataAccessInterface {
                             rs.getString("game_state")
                     );
                 } else {
-                    return null;
+                    throw new DataAccessException("Game not found");
                 }
             }
         } catch (SQLException e) {
@@ -170,7 +171,7 @@ public class MySQLDataAccess implements DataAccessInterface {
                             rs.getString("username")
                     );
                 } else {
-                    return null;
+                    throw new DataAccessException("Auth token not found");
                 }
             }
         } catch (SQLException e) {
