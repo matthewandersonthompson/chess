@@ -66,13 +66,6 @@ public class MySQLDataAccess implements DataAccessInterface {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            // Print debug statements
-            System.out.println("Inserting game: ");
-            System.out.println("Game Name: " + game.getGameName());
-            System.out.println("White Player: " + game.getWhitePlayer());
-            System.out.println("Black Player: " + game.getBlackPlayer());
-            System.out.println("Game State: " + game.getGameState());
-
             stmt.setString(1, game.getGameName());
             stmt.setInt(2, game.getWhitePlayer());
             stmt.setInt(3, game.getBlackPlayer());
@@ -87,7 +80,6 @@ public class MySQLDataAccess implements DataAccessInterface {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace(); // Print the stack trace to see the full error
             throw new DataAccessException("Error inserting game", e);
         }
     }
