@@ -109,6 +109,12 @@ public class InMemoryDataAccess implements DataAccessInterface, UserDAO, GameDAO
     }
 
     @Override
+    public void deleteAuthByUsername(String username) throws DataAccessException {
+        authTokens.entrySet().removeIf(entry -> entry.getValue().getUsername().equals(username));
+    }
+
+
+    @Override
     public int getLatestGameID() {
         return gameIDGenerator.get() - 1;
     }

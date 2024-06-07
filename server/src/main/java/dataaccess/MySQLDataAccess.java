@@ -3,12 +3,15 @@ package dataaccess;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MySQLDataAccess implements DataAccessInterface {
+    private static final Logger logger = LoggerFactory.getLogger(MySQLDataAccess.class);
 
     @Override
     public void clear() throws DataAccessException {
@@ -18,8 +21,10 @@ public class MySQLDataAccess implements DataAccessInterface {
                 stmt.executeUpdate("DELETE FROM moves");
                 stmt.executeUpdate("DELETE FROM games");
                 stmt.executeUpdate("DELETE FROM users");
+                logger.info("Database cleared successfully");
             }
         } catch (SQLException e) {
+            logger.error("Error clearing tables: {}", e.getMessage());
             throw new DataAccessException("Error clearing tables", e);
         }
     }
@@ -33,7 +38,9 @@ public class MySQLDataAccess implements DataAccessInterface {
             stmt.setString(2, user.getPassword());
             stmt.setString(3, user.getEmail());
             stmt.executeUpdate();
+            logger.info("User created successfully: {}", user.getUsername());
         } catch (SQLException e) {
+            logger.error("Error inserting user: {}", e.getMessage());
             throw new DataAccessException("Error inserting user", e);
         }
     }
@@ -56,6 +63,7 @@ public class MySQLDataAccess implements DataAccessInterface {
                 }
             }
         } catch (SQLException e) {
+            logger.error("Error fetching user: {}", e.getMessage());
             throw new DataAccessException("Error fetching user", e);
         }
     }
@@ -65,7 +73,6 @@ public class MySQLDataAccess implements DataAccessInterface {
         String sql = "INSERT INTO games (game_name, white_player, black_player, game_state) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
             stmt.setString(1, game.getGameName());
             stmt.setInt(2, game.getWhitePlayer());
             stmt.setInt(3, game.getBlackPlayer());
@@ -75,11 +82,13 @@ public class MySQLDataAccess implements DataAccessInterface {
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     game.setGameID(generatedKeys.getInt(1));
+                    logger.info("Game created successfully: {}", game.getGameID());
                 } else {
                     throw new DataAccessException("Creating game failed, no ID obtained.");
                 }
             }
         } catch (SQLException e) {
+            logger.error("Error inserting game: {}", e.getMessage());
             throw new DataAccessException("Error inserting game", e);
         }
     }
@@ -104,6 +113,7 @@ public class MySQLDataAccess implements DataAccessInterface {
                 }
             }
         } catch (SQLException e) {
+            logger.error("Error fetching game: {}", e.getMessage());
             throw new DataAccessException("Error fetching game", e);
         }
     }
@@ -124,7 +134,9 @@ public class MySQLDataAccess implements DataAccessInterface {
                         rs.getString("game_state")
                 ));
             }
+            logger.info("Games listed successfully");
         } catch (SQLException e) {
+            logger.error("Error listing games: {}", e.getMessage());
             throw new DataAccessException("Error listing games", e);
         }
         return games;
@@ -141,7 +153,9 @@ public class MySQLDataAccess implements DataAccessInterface {
             stmt.setString(4, game.getGameState());
             stmt.setInt(5, game.getGameID());
             stmt.executeUpdate();
+            logger.info("Game updated successfully: {}", game.getGameID());
         } catch (SQLException e) {
+            logger.error("Error updating game: {}", e.getMessage());
             throw new DataAccessException("Error updating game", e);
         }
     }
@@ -154,7 +168,9 @@ public class MySQLDataAccess implements DataAccessInterface {
             stmt.setString(1, auth.getAuthToken());
             stmt.setString(2, auth.getUsername());
             stmt.executeUpdate();
+            logger.info("Auth token created successfully for user: {}", auth.getUsername());
         } catch (SQLException e) {
+            logger.error("Error inserting auth token: {}", e.getMessage());
             throw new DataAccessException("Error inserting auth token", e);
         }
     }
@@ -176,6 +192,7 @@ public class MySQLDataAccess implements DataAccessInterface {
                 }
             }
         } catch (SQLException e) {
+            logger.error("Error fetching auth token: {}", e.getMessage());
             throw new DataAccessException("Error fetching auth token", e);
         }
     }
@@ -186,9 +203,33 @@ public class MySQLDataAccess implements DataAccessInterface {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, authToken);
-            stmt.executeUpdate();
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                logger.error("Auth token not found in database: {}", authToken);
+                throw new DataAccessException("Auth token not found");
+            }
+            logger.info("Auth token deleted: {}", authToken);
         } catch (SQLException e) {
+            logger.error("Error deleting auth token: {}", authToken, e);
             throw new DataAccessException("Error deleting auth token", e);
+        }
+    }
+
+    @Override
+    public void deleteAuthByUsername(String username) throws DataAccessException {
+        String sql = "DELETE FROM auth_tokens WHERE username = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                logger.error("Auth tokens not found for user: {}", username);
+                throw new DataAccessException("Auth tokens not found for user");
+            }
+            logger.info("Deleted auth tokens for user: {}", username);
+        } catch (SQLException e) {
+            logger.error("Error deleting auth tokens by username: {}", e.getMessage());
+            throw new DataAccessException("Error deleting auth tokens by username", e);
         }
     }
 
@@ -204,6 +245,7 @@ public class MySQLDataAccess implements DataAccessInterface {
                 throw new DataAccessException("Error getting latest game ID");
             }
         } catch (SQLException e) {
+            logger.error("Error getting latest game ID: {}", e.getMessage());
             throw new DataAccessException("Error getting latest game ID", e);
         }
     }
