@@ -15,8 +15,8 @@ public class MySQLGameDAO implements GameDAO {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, game.getGameName());
-            stmt.setInt(2, game.getWhitePlayer());
-            stmt.setInt(3, game.getBlackPlayer());
+            stmt.setString(2, game.getWhiteUsername());
+            stmt.setString(3, game.getBlackUsername());
             stmt.setString(4, game.getGameState());
             stmt.executeUpdate();
 
@@ -44,8 +44,8 @@ public class MySQLGameDAO implements GameDAO {
                     game = new GameData(
                             rs.getInt("id"),
                             rs.getString("game_name"),
-                            rs.getInt("white_player"),
-                            rs.getInt("black_player"),
+                            rs.getString("white_username"),
+                            rs.getString("black_username"),
                             rs.getString("game_state")
                     );
                 }

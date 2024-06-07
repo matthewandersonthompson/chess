@@ -16,7 +16,7 @@ class GameDAOTest {
 
     @Test
     void testCreateGameSuccess() throws DataAccessException {
-        GameData game = new GameData(0, "Test Game", 0, 0, "gameState");
+        GameData game = new GameData(0, "Test Game", null, null, "gameState");
         dataAccess.createGame(game);
         GameData fetchedGame = dataAccess.getGame(game.getGameID());
         assertNotNull(fetchedGame);
@@ -25,8 +25,8 @@ class GameDAOTest {
 
     @Test
     void testCreateGameFail() {
-        GameData game1 = new GameData(0, "Test Game", 0, 0, "gameState");
-        GameData game2 = new GameData(0, "Test Game", 0, 0, "gameState");
+        GameData game1 = new GameData(0, "Test Game", null, null, "gameState");
+        GameData game2 = new GameData(0, "Test Game", null, null, "gameState");
         try {
             dataAccess.createGame(game1);
             assertThrows(DataAccessException.class, () -> {
@@ -39,7 +39,7 @@ class GameDAOTest {
 
     @Test
     void testGetGameSuccess() throws DataAccessException {
-        GameData game = new GameData(0, "Test Game", 0, 0, "gameState");
+        GameData game = new GameData(0, "Test Game", null, null, "gameState");
         dataAccess.createGame(game);
         GameData fetchedGame = dataAccess.getGame(game.getGameID());
         assertNotNull(fetchedGame);
@@ -54,7 +54,7 @@ class GameDAOTest {
 
     @Test
     void testClearSuccess() throws DataAccessException {
-        GameData game = new GameData(0, "Test Game", 0, 0, "gameState");
+        GameData game = new GameData(0, "Test Game", null, null, "gameState");
         dataAccess.createGame(game);
         dataAccess.clear();
         assertThrows(DataAccessException.class, () -> {

@@ -15,7 +15,7 @@ public class GameService {
     }
 
     public GameData createGame(String gameName) throws DataAccessException {
-        GameData gameData = new GameData(0, gameName, 0, 0, new ChessGame().toString());
+        GameData gameData = new GameData(0, gameName, null, null, new ChessGame().toString());
         dataAccess.createGame(gameData);
         return gameData;
     }
@@ -31,16 +31,14 @@ public class GameService {
         }
 
         if (playerColor.equalsIgnoreCase("WHITE")) {
-            if (gameData.getWhitePlayer() != 0) {
+            if (gameData.getWhiteUsername() != null) {
                 throw new DataAccessException("White player already taken");
             }
-            gameData.setWhitePlayer(username.hashCode()); // using hashCode as a placeholder
             gameData.setWhiteUsername(username);
         } else if (playerColor.equalsIgnoreCase("BLACK")) {
-            if (gameData.getBlackPlayer() != 0) {
+            if (gameData.getBlackUsername() != null) {
                 throw new DataAccessException("Black player already taken");
             }
-            gameData.setBlackPlayer(username.hashCode()); // using hashCode as a placeholder
             gameData.setBlackUsername(username);
         } else {
             throw new DataAccessException("Invalid player color");

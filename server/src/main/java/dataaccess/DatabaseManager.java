@@ -64,11 +64,12 @@ public class DatabaseManager {
             String createGamesTable = "CREATE TABLE IF NOT EXISTS games (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY," +
                     "game_name VARCHAR(255) NOT NULL," +
-                    "white_player INT," +
-                    "black_player INT," +
+                    "white_username VARCHAR(255)," +
+                    "black_username VARCHAR(255)," +
                     "game_state TEXT" +
                     ")";
             stmt.executeUpdate(createGamesTable);
+//maybe get rid of foreign keys
 
             String createAuthTokensTable = "CREATE TABLE IF NOT EXISTS auth_tokens (" +
                     "auth_token VARCHAR(255) PRIMARY KEY," +

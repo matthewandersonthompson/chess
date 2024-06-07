@@ -37,7 +37,7 @@ class GameServiceTest {
             GameData game = gameService.createGame("Test Game");
             gameService.joinGame(game.getGameID(), "user1", "WHITE");
             GameData updatedGame = dataAccess.getGame(game.getGameID());
-            assertEquals("user1".hashCode(), updatedGame.getWhitePlayer()); // comparing hashCode
+            assertEquals("user1", updatedGame.getWhiteUsername());
         } catch (DataAccessException e) {
             fail("Exception should not be thrown: " + e.getMessage());
         }

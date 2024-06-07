@@ -70,12 +70,12 @@ public class MySQLDataAccess implements DataAccessInterface {
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
-        String sql = "INSERT INTO games (game_name, white_player, black_player, game_state) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO games (game_name, white_username, black_username, game_state) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, game.getGameName());
-            stmt.setInt(2, game.getWhitePlayer());
-            stmt.setInt(3, game.getBlackPlayer());
+            stmt.setString(2, game.getWhiteUsername());
+            stmt.setString(3, game.getBlackUsername());
             stmt.setString(4, game.getGameState());
             stmt.executeUpdate();
 
@@ -104,8 +104,8 @@ public class MySQLDataAccess implements DataAccessInterface {
                     return new GameData(
                             rs.getInt("id"),
                             rs.getString("game_name"),
-                            rs.getInt("white_player"),
-                            rs.getInt("black_player"),
+                            rs.getString("white_username"),
+                            rs.getString("black_username"),
                             rs.getString("game_state")
                     );
                 } else {
@@ -129,8 +129,8 @@ public class MySQLDataAccess implements DataAccessInterface {
                 games.add(new GameData(
                         rs.getInt("id"),
                         rs.getString("game_name"),
-                        rs.getInt("white_player"),
-                        rs.getInt("black_player"),
+                        rs.getString("white_username"),
+                        rs.getString("black_username"),
                         rs.getString("game_state")
                 ));
             }
@@ -144,12 +144,12 @@ public class MySQLDataAccess implements DataAccessInterface {
 
     @Override
     public void updateGame(GameData game) throws DataAccessException {
-        String sql = "UPDATE games SET game_name = ?, white_player = ?, black_player = ?, game_state = ? WHERE id = ?";
+        String sql = "UPDATE games SET game_name = ?, white_username = ?, black_username = ?, game_state = ? WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, game.getGameName());
-            stmt.setInt(2, game.getWhitePlayer());
-            stmt.setInt(3, game.getBlackPlayer());
+            stmt.setString(2, game.getWhiteUsername());
+            stmt.setString(3, game.getBlackUsername());
             stmt.setString(4, game.getGameState());
             stmt.setInt(5, game.getGameID());
             stmt.executeUpdate();
