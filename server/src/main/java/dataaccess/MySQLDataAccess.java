@@ -14,10 +14,10 @@ public class MySQLDataAccess implements DataAccessInterface {
     public void clear() throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (Statement stmt = conn.createStatement()) {
-                stmt.executeUpdate("DELETE FROM users");
-                stmt.executeUpdate("DELETE FROM games");
-                stmt.executeUpdate("DELETE FROM moves");
                 stmt.executeUpdate("DELETE FROM auth_tokens");
+                stmt.executeUpdate("DELETE FROM moves");
+                stmt.executeUpdate("DELETE FROM games");
+                stmt.executeUpdate("DELETE FROM users");
             }
         } catch (SQLException e) {
             throw new DataAccessException("Error clearing tables", e);
