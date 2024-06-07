@@ -46,6 +46,12 @@ public class DatabaseManager {
             String useDB = "USE " + DATABASE_NAME;
             stmt.executeUpdate(useDB);
 
+            // Drop existing tables if they exist (to avoid foreign key issues)
+            stmt.executeUpdate("DROP TABLE IF EXISTS moves");
+            stmt.executeUpdate("DROP TABLE IF EXISTS auth_tokens");
+            stmt.executeUpdate("DROP TABLE IF EXISTS games");
+            stmt.executeUpdate("DROP TABLE IF EXISTS users");
+
             String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY," +
                     "username VARCHAR(255) UNIQUE NOT NULL," +
@@ -54,14 +60,13 @@ public class DatabaseManager {
                     ")";
             stmt.executeUpdate(createUsersTable);
 
+            // Create games table without foreign key constraints
             String createGamesTable = "CREATE TABLE IF NOT EXISTS games (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY," +
                     "game_name VARCHAR(255) NOT NULL," +
                     "white_player INT," +
                     "black_player INT," +
-                    "game_state TEXT," +
-                    "FOREIGN KEY (white_player) REFERENCES users(id)," +
-                    "FOREIGN KEY (black_player) REFERENCES users(id)" +
+                    "game_state TEXT" +
                     ")";
             stmt.executeUpdate(createGamesTable);
 

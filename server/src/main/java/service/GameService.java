@@ -45,6 +45,7 @@ public class GameService {
         } else {
             throw new DataAccessException("Invalid player color");
         }
+
         dataAccess.updateGame(gameData);
     }
 
