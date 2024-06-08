@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MySQLDataAccess implements DataAccessInterface {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDataAccess.class);  // Changed
+    private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDataAccess.class);
 
     @Override
     public void clear() throws DataAccessException {

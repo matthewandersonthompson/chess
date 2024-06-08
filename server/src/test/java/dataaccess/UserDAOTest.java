@@ -30,7 +30,7 @@ class UserDAOTest {
             dataAccess
                     .createUser(user);
             assertThrows(DataAccessException.class, () -> {
-                dataAccess.createUser(user); // Should fail due to duplicate username
+                dataAccess.createUser(user);
             });
         } catch (DataAccessException e) {
             fail("Exception should not be thrown: " + e.getMessage());

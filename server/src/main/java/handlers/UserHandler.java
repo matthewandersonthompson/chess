@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public class UserHandler {
     private UserService userService;
     private final Gson gson = new Gson();
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserHandler.class);  // Changed
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserHandler.class);
 
     public UserHandler(UserService userService) {
         this.userService = userService;

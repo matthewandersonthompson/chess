@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public class UserService {
     private final DataAccessInterface dataAccess;
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);  // Changed
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
     public UserService(DataAccessInterface dataAccess) {
         this.dataAccess = dataAccess;

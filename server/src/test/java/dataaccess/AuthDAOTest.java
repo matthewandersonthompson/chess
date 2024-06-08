@@ -28,7 +28,7 @@ class AuthDAOTest {
         AuthData auth = new AuthData("token123", "user1");
         assertThrows(DataAccessException.class, () -> {
             dataAccess.createAuth(auth);
-            dataAccess.createAuth(auth); // Should fail due to duplicate token
+            dataAccess.createAuth(auth);
         });
     }
 

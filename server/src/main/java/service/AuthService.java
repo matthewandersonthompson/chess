@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public class AuthService {
     private final DataAccessInterface dataAccess;
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthService.class);  // Changed
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthService.class);
 
     public AuthService(DataAccessInterface dataAccess) {
         this.dataAccess = dataAccess;

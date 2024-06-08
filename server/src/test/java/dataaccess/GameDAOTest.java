@@ -29,7 +29,7 @@ class GameDAOTest {
         GameData game2 = new GameData(0, "Test Game", null, null, "gameState");
         assertThrows(DataAccessException.class, () -> {
             dataAccess.createGame(game1);
-            dataAccess.createGame(game2); // Should fail due to duplicate game name
+            dataAccess.createGame(game2);
         });
     }
 

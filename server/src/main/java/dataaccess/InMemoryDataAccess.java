@@ -45,7 +45,6 @@ public class InMemoryDataAccess implements DataAccessInterface, UserDAO, GameDAO
 
     @Override
     public void createGame(GameData game) throws DataAccessException {
-        // Check for duplicate game names to simulate a conflict scenario
         for (GameData existingGame : games.values()) {
             if (existingGame.getGameName().equals(game.getGameName())) {
                 throw new DataAccessException("Game with this name already exists");
