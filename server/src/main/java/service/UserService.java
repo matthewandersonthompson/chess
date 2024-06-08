@@ -44,7 +44,7 @@ public class UserService {
             logger.error("Invalid username or password for user: {}", username);
             throw new DataAccessException("Invalid username or password");
         }
-        dataAccess.deleteAuthByUsername(username);
+        //dataAccess.deleteAuthByUsername(username);
         String authToken = UUID.randomUUID().toString();
         AuthData auth = new AuthData(authToken, username);
         dataAccess.createAuth(auth);
