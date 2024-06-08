@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public class UserService {
     private final DataAccessInterface dataAccess;
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserService.class);  // Changed
 
     public UserService(DataAccessInterface dataAccess) {
         this.dataAccess = dataAccess;
@@ -30,7 +30,7 @@ public class UserService {
                 String authToken = UUID.randomUUID().toString();
                 AuthData auth = new AuthData(authToken, user.getUsername());
                 dataAccess.createAuth(auth);
-                logger.info("User registered successfully: {}", user.getUsername());
+                LOGGER.info("User registered successfully: {}", user.getUsername());
                 return auth;
             } else {
                 throw e;
@@ -41,20 +41,19 @@ public class UserService {
     public AuthData login(String username, String password) throws DataAccessException {
         UserData user = dataAccess.getUser(username);
         if (user == null || !BCrypt.checkpw(password, user.getPassword())) {
-            logger.error("Invalid username or password for user: {}", username);
+            LOGGER.error("Invalid username or password for user: {}", username);
             throw new DataAccessException("Invalid username or password");
         }
-        //dataAccess.deleteAuthByUsername(username);
         String authToken = UUID.randomUUID().toString();
         AuthData auth = new AuthData(authToken, username);
         dataAccess.createAuth(auth);
-        logger.info("User logged in successfully: {} with new token: {}", username, authToken);
+        LOGGER.info("User logged in successfully: {} with new token: {}", username, authToken);
         return auth;
     }
 
     public void logout(String authToken) throws DataAccessException {
-        logger.info("Attempting to log out with token: {}", authToken);
+        LOGGER.info("Attempting to log out with token: {}", authToken);
         dataAccess.deleteAuth(authToken);
-        logger.info("User logged out successfully, auth token deleted: {}", authToken);
+        LOGGER.info("User logged out successfully, auth token deleted: {}", authToken);
     }
 }

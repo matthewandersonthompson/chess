@@ -9,7 +9,4 @@ public class DataAccessException extends Exception {
         super(message, cause);
     }
 
-    public static DataAccessException userNotFound() {
-        return new DataAccessException("User not found");
-    }
 }

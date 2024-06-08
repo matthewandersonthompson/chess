@@ -46,12 +46,6 @@ public class DatabaseManager {
             String useDB = "USE " + DATABASE_NAME;
             stmt.executeUpdate(useDB);
 
-//            // Drop existing tables if they exist (to avoid foreign key issues)
-//            stmt.executeUpdate("DROP TABLE IF EXISTS moves");
-//            stmt.executeUpdate("DROP TABLE IF EXISTS auth_tokens");
-//            stmt.executeUpdate("DROP TABLE IF EXISTS games");
-//            stmt.executeUpdate("DROP TABLE IF EXISTS users");
-
             String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
                     "id INT AUTO_INCREMENT PRIMARY KEY," +
                     "username VARCHAR(255) UNIQUE NOT NULL," +

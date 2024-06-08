@@ -2,7 +2,6 @@ package handlers;
 
 import com.google.gson.Gson;
 import dataaccess.DataAccessException;
-import model.UserData;
 import requests.RegisterRequest;
 import requests.LoginRequest;
 import results.RegisterResult;
@@ -17,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public class UserHandler {
     private UserService userService;
     private final Gson gson = new Gson();
-    private static final Logger logger = LoggerFactory.getLogger(UserHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserHandler.class);  // Changed
 
     public UserHandler(UserService userService) {
         this.userService = userService;
@@ -32,7 +31,7 @@ public class UserHandler {
             return gson.toJson(new ErrorResponse("Error: Missing required fields"));
         }
         try {
-            var user = new UserData(request.username(), request.password(), request.email());
+            var user = new model.UserData(request.username(), request.password(), request.email());
             var auth = userService.register(user);
             res.status(200);
             return gson.toJson(new RegisterResult(auth.getUsername(), auth.getAuthToken()));
@@ -44,13 +43,13 @@ public class UserHandler {
 
     public Route handleLogin = (Request req, Response res) -> {
         LoginRequest request = gson.fromJson(req.body(), LoginRequest.class);
-        logger.info("Login attempt for user: {}", request.username());
+        LOGGER.info("Login attempt for user: {}", request.username());
         try {
             var auth = userService.login(request.username(), request.password());
             res.status(200);
             return gson.toJson(new LoginResult(auth.getUsername(), auth.getAuthToken()));
         } catch (DataAccessException e) {
-            logger.error("Login failed for user: {} - {}", request.username(), e.getMessage());
+            LOGGER.error("Login failed for user: {} - {}", request.username(), e.getMessage());
             res.status(401);
             return gson.toJson(new ErrorResponse("Error: " + e.getMessage()));
         }
