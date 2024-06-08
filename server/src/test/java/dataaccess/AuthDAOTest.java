@@ -26,14 +26,10 @@ class AuthDAOTest {
     @Test
     void testCreateAuthFail() {
         AuthData auth = new AuthData("token123", "user1");
-        try {
+        assertThrows(DataAccessException.class, () -> {
             dataAccess.createAuth(auth);
-            assertThrows(DataAccessException.class, () -> {
-                dataAccess.createAuth(auth); // Should fail due to duplicate token
-            });
-        } catch (DataAccessException e) {
-            fail("Exception should not be thrown: " + e.getMessage());
-        }
+            dataAccess.createAuth(auth); // Should fail due to duplicate token
+        });
     }
 
     @Test
@@ -58,6 +54,13 @@ class AuthDAOTest {
         dataAccess.deleteAuth("token123");
         assertThrows(DataAccessException.class, () -> {
             dataAccess.getAuth("token123");
+        });
+    }
+
+    @Test
+    void testDeleteAuthFail() {
+        assertThrows(DataAccessException.class, () -> {
+            dataAccess.deleteAuth("nonexistent");
         });
     }
 
