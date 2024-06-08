@@ -27,14 +27,10 @@ class GameDAOTest {
     void testCreateGameFail() {
         GameData game1 = new GameData(0, "Test Game", null, null, "gameState");
         GameData game2 = new GameData(0, "Test Game", null, null, "gameState");
-        try {
+        assertThrows(DataAccessException.class, () -> {
             dataAccess.createGame(game1);
-            assertThrows(DataAccessException.class, () -> {
-                dataAccess.createGame(game2);
-            });
-        } catch (DataAccessException e) {
-            fail("Exception should not be thrown: " + e.getMessage());
-        }
+            dataAccess.createGame(game2); // Should fail due to duplicate game name
+        });
     }
 
     @Test
@@ -59,6 +55,24 @@ class GameDAOTest {
         dataAccess.clear();
         assertThrows(DataAccessException.class, () -> {
             dataAccess.getGame(game.getGameID());
+        });
+    }
+
+    @Test
+    void testUpdateGameSuccess() throws DataAccessException {
+        GameData game = new GameData(0, "Test Game", null, null, "gameState");
+        dataAccess.createGame(game);
+        game.setGameState("newState");
+        dataAccess.updateGame(game);
+        GameData updatedGame = dataAccess.getGame(game.getGameID());
+        assertEquals("newState", updatedGame.getGameState());
+    }
+
+    @Test
+    void testUpdateGameFail() {
+        GameData game = new GameData(999, "Non-existent Game", null, null, "gameState");
+        assertThrows(DataAccessException.class, () -> {
+            dataAccess.updateGame(game);
         });
     }
 }

@@ -46,4 +46,8 @@ public class GameData {
     public String getGameState() {
         return gameState;
     }
+
+    public void setGameState(String gameState) {
+        this.gameState = gameState;
+    }
 }
