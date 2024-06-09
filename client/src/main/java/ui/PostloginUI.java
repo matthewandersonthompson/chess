@@ -1,6 +1,7 @@
 package ui;
 
 import client.ServerFacade;
+import chess.ChessGame;
 import model.GameData;
 import results.CreateGameResult;
 import results.ListGamesResult;
@@ -134,7 +135,7 @@ public class PostloginUI {
         try {
             serverFacade.joinGame(selectedGame.getGameID(), color);
             System.out.println("Joined game successfully!");
-            // TODO: Transition to GameplayUI
+            new GameplayUI(new ChessGame(), color).display(); // Transition to GameplayUI
         } catch (Exception e) {
             System.out.println("Error during joining game: " + e.getMessage());
         }
