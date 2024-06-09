@@ -61,7 +61,7 @@ public class PreloginUI {
         try {
             LoginResult result = serverFacade.login(username, password);
             System.out.println("Login successful! Auth token: " + result.authToken());
-            // TODO: Transition to PostloginUI
+            new PostloginUI(serverFacade).display(); // Transition to PostloginUI
         } catch (Exception e) {
             System.out.println("Error during login: " + e.getMessage());
         }
@@ -78,7 +78,7 @@ public class PreloginUI {
         try {
             RegisterResult result = serverFacade.register(username, password, email);
             System.out.println("Registration successful! Auth token: " + result.authToken());
-            // TODO: Transition to PostloginUI
+            new PostloginUI(serverFacade).display(); // Transition to PostloginUI
         } catch (Exception e) {
             System.out.println("Error during registration: " + e.getMessage());
         }
