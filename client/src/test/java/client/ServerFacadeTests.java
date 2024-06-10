@@ -28,6 +28,8 @@ public class ServerFacadeTests {
     @BeforeEach
     public void clearDatabase() {
         try {
+            // Register and log in a user to ensure a valid session
+            var authData = facade.register("admin", "adminpass", "admin@email.com");
             facade.logout(); // Clear session data
             // Add any other necessary cleanup code
         } catch (Exception e) {
@@ -46,6 +48,21 @@ public class ServerFacadeTests {
     public void registerFailure() {
         assertThrows(Exception.class, () -> {
             facade.register("", "password", "p1@email.com"); // Empty username
+        });
+    }
+
+    @Test
+    public void loginSuccess() throws Exception {
+        facade.register("player2", "password", "p2@email.com");
+        var authData = facade.login("player2", "password");
+        assertNotNull(authData);
+        assertTrue(authData.authToken().length() > 10);
+    }
+
+    @Test
+    public void loginFailure() {
+        assertThrows(Exception.class, () -> {
+            facade.login("nonexistent", "password");
         });
     }
 }
