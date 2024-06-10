@@ -46,7 +46,9 @@ public class Server {
         Spark.put("/game", gameHandler.handleJoinGame);
 
         Spark.awaitInitialization();
-        return Spark.port();
+        int actualPort = Spark.port();
+        System.out.println("Started test HTTP server on " + actualPort);  // Print the port number
+        return actualPort;
     }
 
     public void stop() {

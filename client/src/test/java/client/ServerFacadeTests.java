@@ -5,6 +5,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -17,13 +20,14 @@ public class ServerFacadeTests {
     private static String adminAuthToken;
 
     private static final String serverHost = "localhost";
-    private static final int serverPort = 8080;
+    private static int serverPort;
 
     @BeforeAll
     public static void init() throws Exception {
         serverProcess = startServer();
         Thread.sleep(5000);
 
+        serverPort = getServerPort(serverProcess);  // Get the dynamic port
         facade = new ServerFacade(serverHost, serverPort);
 
         try {
@@ -147,8 +151,23 @@ public class ServerFacadeTests {
 
     private static Process startServer() throws Exception {
         ProcessBuilder processBuilder = new ProcessBuilder(
-                "java", "-cp", "out/production/server:out/production/shared", "Main"
+                "java", "-cp", "out/production/server:out/production/shared", "server.Server" // Ensure the correct main class is used
         );
         return processBuilder.start();
+    }
+
+    private static int getServerPort(Process process) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println("Server Output: " + line);  // Add this line for logging
+                if (line.contains("Started test HTTP server on")) {
+                    return Integer.parseInt(line.split(" ")[5]);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        throw new RuntimeException("Failed to get server port");
     }
 }
