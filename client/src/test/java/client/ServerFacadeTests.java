@@ -4,10 +4,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import server.Server;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -15,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerFacadeTests {
 
-    private static Process serverProcess;
+    private static Server server;
     private static ServerFacade facade;
     private static String adminAuthToken;
 
@@ -23,11 +21,10 @@ public class ServerFacadeTests {
     private static int serverPort;
 
     @BeforeAll
-    public static void init() throws Exception {
-        serverProcess = startServer();
-        Thread.sleep(5000);
-
-        serverPort = getServerPort(serverProcess);  // Get the dynamic port
+    public static void init() {
+        server = new Server();
+        serverPort = server.run(0);  // Start server on any available port
+        System.out.println("Started test HTTP server on " + serverPort);
         facade = new ServerFacade(serverHost, serverPort);
 
         try {
@@ -40,7 +37,7 @@ public class ServerFacadeTests {
 
     @AfterAll
     static void stopServer() {
-        serverProcess.destroy();
+        server.stop();
     }
 
     @BeforeEach
@@ -147,27 +144,5 @@ public class ServerFacadeTests {
         assertThrows(Exception.class, () -> {
             facade.listGames();
         });
-    }
-
-    private static Process startServer() throws Exception {
-        ProcessBuilder processBuilder = new ProcessBuilder(
-                "java", "-cp", "out/production/server:out/production/shared", "server.Server" // Ensure the correct main class is used
-        );
-        return processBuilder.start();
-    }
-
-    private static int getServerPort(Process process) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println("Server Output: " + line);  // Add this line for logging
-                if (line.contains("Started test HTTP server on")) {
-                    return Integer.parseInt(line.split(" ")[5]);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        throw new RuntimeException("Failed to get server port");
     }
 }

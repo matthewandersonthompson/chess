@@ -3,7 +3,6 @@ package main;
 import chess.ChessGame;
 import chess.ChessPiece;
 import client.ServerFacade;
-import server.Server;
 import ui.PreloginUI;
 
 public class Main {
