@@ -20,6 +20,7 @@ public class ServerFacade {
     private final String serverHost;
     private final int serverPort;
     private final Gson gson = new Gson();
+    private String authToken; // Store the auth token here
 
     public ServerFacade(String serverHost, int serverPort) {
         this.serverHost = serverHost;
@@ -31,6 +32,9 @@ public class ServerFacade {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod(method);
         connection.setRequestProperty("Content-Type", "application/json");
+        if (authToken != null && !authToken.isEmpty()) {
+            connection.setRequestProperty("Authorization", authToken);
+        }
         connection.setDoOutput(true);
 
         if (requestBody != null) {
@@ -51,17 +55,22 @@ public class ServerFacade {
     public RegisterResult register(String username, String password, String email) throws Exception {
         RegisterRequest request = new RegisterRequest(username, password, email);
         JsonObject response = sendRequest("/user", "POST", request);
-        return gson.fromJson(response, RegisterResult.class);
+        RegisterResult result = gson.fromJson(response, RegisterResult.class);
+        this.authToken = result.authToken(); // Store the auth token
+        return result;
     }
 
     public LoginResult login(String username, String password) throws Exception {
         LoginRequest request = new LoginRequest(username, password);
         JsonObject response = sendRequest("/session", "POST", request);
-        return gson.fromJson(response, LoginResult.class);
+        LoginResult result = gson.fromJson(response, LoginResult.class);
+        this.authToken = result.authToken(); // Store the auth token
+        return result;
     }
 
     public void logout() throws Exception {
         sendRequest("/session", "DELETE", null);
+        this.authToken = null; // Clear the auth token
     }
 
     public CreateGameResult createGame(String gameName) throws Exception {

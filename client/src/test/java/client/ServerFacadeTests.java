@@ -1,27 +1,34 @@
 package client;
 
-import server.Server; // Ensure this is the correct package for your Server class
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerFacadeTests {
 
-    private static Server server;
+    private static Process serverProcess;
     private static ServerFacade facade;
+    private static String adminAuthToken;
+
+    private static final String serverHost = "localhost";
+    private static final int serverPort = 8080;
 
     @BeforeAll
-    public static void init() {
-        server = new Server();
-        var port = server.run(0);
-        System.out.println("Started test HTTP server on " + port);
-        facade = new ServerFacade("localhost", port);
+    public static void init() throws Exception {
+        serverProcess = startServer();
+        Thread.sleep(5000);
 
-        // Register an admin user for setup and teardown
+        facade = new ServerFacade(serverHost, serverPort);
+
         try {
-            facade.register("admin", "adminpass", "admin@email.com");
+            var adminRegisterResult = facade.register("admin", "adminpass", "admin@email.com");
+            adminAuthToken = adminRegisterResult.authToken();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -29,16 +36,28 @@ public class ServerFacadeTests {
 
     @AfterAll
     static void stopServer() {
-        server.stop();
+        serverProcess.destroy();
     }
 
     @BeforeEach
     public void clearDatabase() {
         try {
-            // Assuming a method to clear database or re-initialize state
-            // facade.clearDatabase(); // If such method exists
+            sendClearDatabaseRequest();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void sendClearDatabaseRequest() throws Exception {
+        URL url = new URL("http://" + serverHost + ":" + serverPort + "/db");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("DELETE");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setDoOutput(true);
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            throw new Exception("HTTP error code: " + responseCode);
         }
     }
 
@@ -52,7 +71,7 @@ public class ServerFacadeTests {
     @Test
     public void registerFailure() {
         assertThrows(Exception.class, () -> {
-            facade.register("", "password", "p1@email.com"); // Empty username
+            facade.register("", "password", "p1@email.com");
         });
     }
 
@@ -67,7 +86,7 @@ public class ServerFacadeTests {
     @Test
     public void loginFailure() {
         assertThrows(Exception.class, () -> {
-            facade.login("nonexistent", "password"); // Non-existent user
+            facade.login("nonexistent", "password");
         });
     }
 
@@ -79,7 +98,8 @@ public class ServerFacadeTests {
 
     @Test
     public void createGameSuccess() throws Exception {
-        var authData = facade.register("player4", "password", "p4@email.com");
+        facade.register("player4", "password", "p4@email.com");
+        facade.login("player4", "password");
         var gameData = facade.createGame("TestGame");
         assertNotNull(gameData);
         assertTrue(gameData.gameID() > 0);
@@ -88,13 +108,14 @@ public class ServerFacadeTests {
     @Test
     public void createGameFailure() {
         assertThrows(Exception.class, () -> {
-            facade.createGame(""); // Empty game name
+            facade.createGame("");
         });
     }
 
     @Test
     public void joinGameSuccess() throws Exception {
-        var authData = facade.register("player5", "password", "p5@email.com");
+        facade.register("player5", "password", "p5@email.com");
+        facade.login("player5", "password");
         var gameData = facade.createGame("TestGame");
         assertNotNull(gameData);
         facade.joinGame(gameData.gameID(), "White");
@@ -103,23 +124,31 @@ public class ServerFacadeTests {
     @Test
     public void joinGameFailure() {
         assertThrows(Exception.class, () -> {
-            facade.joinGame(9999, "White"); // Non-existent game ID
+            facade.joinGame(9999, "White");
         });
     }
 
     @Test
     public void listGamesSuccess() throws Exception {
-        var authData = facade.register("player7", "password", "p7@email.com");
+        facade.register("player7", "password", "p7@email.com");
+        facade.login("player7", "password");
         facade.createGame("TestGame");
         var games = facade.listGames();
         assertNotNull(games);
-        assertTrue(games.games().size() > 0); // Use games() method from the record
+        assertTrue(games.games().size() > 0);
     }
 
     @Test
-    public void listGamesFailure() throws Exception {
-        var games = facade.listGames();
-        assertNotNull(games);
-        assertTrue(games.games().size() >= 0); // Use games() method from the record
+    public void listGamesFailure() {
+        assertThrows(Exception.class, () -> {
+            facade.listGames();
+        });
+    }
+
+    private static Process startServer() throws Exception {
+        ProcessBuilder processBuilder = new ProcessBuilder(
+                "java", "-cp", "out/production/server:out/production/shared", "Main"
+        );
+        return processBuilder.start();
     }
 }
