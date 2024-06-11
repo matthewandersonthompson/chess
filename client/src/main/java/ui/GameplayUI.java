@@ -24,13 +24,13 @@ public class GameplayUI {
         System.out.println("Drawing board with " + (isWhiteBottom ? "white" : "black") + " at bottom:");
 
         if (isWhiteBottom) {
-            drawBoardWithLabels(board, 8, 1, -1);
+            drawBoardWithLabels(board, 8, 1, -1, true);
         } else {
-            drawBoardWithLabels(board, 1, 8, 1);
+            drawBoardWithLabels(board, 1, 8, 1, false);
         }
     }
 
-    private void drawBoardWithLabels(ChessBoard board, int startRow, int endRow, int rowStep) {
+    private void drawBoardWithLabels(ChessBoard board, int startRow, int endRow, int rowStep, boolean isWhiteBottom) {
         // Print column labels
         System.out.print(" ");
         for (char c = 'a'; c <= 'h'; c++) {
@@ -43,7 +43,7 @@ public class GameplayUI {
             for (int col = 1; col <= 8; col++) {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(position);
-                boolean isWhiteSquare = (row + col) % 2 == 0;
+                boolean isWhiteSquare = isWhiteBottom ? (row + col) % 2 != 0 : (row + col) % 2 == 0;
 
                 if (piece != null) {
                     System.out.print(getColoredSquare(isWhiteSquare) + getColoredPiece(piece) + EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR);
