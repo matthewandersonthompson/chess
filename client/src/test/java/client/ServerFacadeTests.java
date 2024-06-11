@@ -17,7 +17,7 @@ public class ServerFacadeTests {
     private static ServerFacade facade;
     private static String adminAuthToken;
 
-    private static final String serverHost = "localhost";
+    private static final String SERVER_HOST = "localhost";
     private static int serverPort;
 
     @BeforeAll
@@ -25,7 +25,7 @@ public class ServerFacadeTests {
         server = new Server();
         serverPort = server.run(0);  // Start server on any available port
         System.out.println("Started test HTTP server on " + serverPort);
-        facade = new ServerFacade(serverHost, serverPort);
+        facade = new ServerFacade(SERVER_HOST, serverPort); // Use updated constant name
 
         try {
             var adminRegisterResult = facade.register("admin", "adminpass", "admin@email.com");
@@ -50,7 +50,7 @@ public class ServerFacadeTests {
     }
 
     private void sendClearDatabaseRequest() throws Exception {
-        URL url = new URL("http://" + serverHost + ":" + serverPort + "/db");
+        URL url = new URL("http://" + SERVER_HOST + ":" + serverPort + "/db");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("DELETE");
         connection.setRequestProperty("Content-Type", "application/json");
@@ -95,6 +95,13 @@ public class ServerFacadeTests {
     public void logoutSuccess() throws Exception {
         var authData = facade.register("player3", "password", "p3@email.com");
         facade.logout();
+    }
+
+    @Test
+    public void logoutFailure() {
+        assertThrows(Exception.class, () -> {
+            facade.logout();  // Attempt to logout without being logged in
+        });
     }
 
     @Test
