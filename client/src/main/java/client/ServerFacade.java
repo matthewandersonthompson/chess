@@ -7,13 +7,15 @@ import requests.CreateGameRequest;
 import requests.JoinGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
-import requests.MakeMoveRequest; // Import MakeMoveRequest
-import chess.ChessMove; // Import ChessMove
+import requests.MakeMoveRequest;
+import requests.LeaveGameRequest; // Import LeaveGameRequest
+import requests.ResignGameRequest; // Import ResignGameRequest
+import chess.ChessMove;
 import results.CreateGameResult;
 import results.ListGamesResult;
 import results.LoginResult;
 import results.RegisterResult;
-import results.MakeMoveResult; // Import MakeMoveResult
+import results.MakeMoveResult;
 
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -97,5 +99,17 @@ public class ServerFacade {
         MakeMoveRequest request = new MakeMoveRequest(gameID, move);
         JsonObject response = sendRequest("/game/move", "POST", request);
         return gson.fromJson(response, MakeMoveResult.class);
+    }
+
+    // Add the leaveGame method
+    public void leaveGame(int gameID) throws Exception {
+        LeaveGameRequest request = new LeaveGameRequest(gameID);
+        sendRequest("/game/leave", "POST", request);
+    }
+
+    // Add the resignGame method
+    public void resignGame(int gameID) throws Exception {
+        ResignGameRequest request = new ResignGameRequest(gameID);
+        sendRequest("/game/resign", "POST", request);
     }
 }
