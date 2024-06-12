@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
+import chess.ChessGame;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
@@ -13,6 +14,7 @@ import java.util.Map;
 @ServerEndpoint("/ws")
 public class GameWebSocketServer {
     private static final Map<Session, String> sessionAuthTokens = new HashMap<>();
+    private static final Map<Integer, ChessGame> gameStates = new HashMap<>(); // Add game states map
     private static final Gson gson = new Gson();
 
     @OnOpen
@@ -60,20 +62,33 @@ public class GameWebSocketServer {
 
     private void handleConnectCommand(Session session, UserGameCommand.ConnectCommand command) {
         sessionAuthTokens.put(session, command.getAuthString());
+        gameStates.putIfAbsent(command.getGameID(), new ChessGame()); // Initialize game if not present
         sendNotification(session, "User connected to game: " + command.getGameID());
     }
 
     private void handleMakeMoveCommand(Session session, UserGameCommand.MakeMoveCommand command) {
-        // Handle the move logic here
-        sendNotification(session, "Move made in game: " + command.getGameID());
+        ChessGame game = gameStates.get(command.getGameID());
+        if (game == null) {
+            sendErrorMessage(session, "Game not found: " + command.getGameID());
+            return;
+        }
+
+        try {
+            game.makeMove(command.getMove());
+            broadcastMessageToGame(command.getGameID(), new ServerMessage.NotificationMessage("Move made in game: " + command.getGameID()));
+        } catch (Exception e) {
+            sendErrorMessage(session, "Invalid move: " + e.getMessage());
+        }
     }
 
     private void handleLeaveCommand(Session session, UserGameCommand.LeaveCommand command) {
         sendNotification(session, "User left the game: " + command.getGameID());
+        // Handle additional leave logic here
     }
 
     private void handleResignCommand(Session session, UserGameCommand.ResignCommand command) {
         sendNotification(session, "User resigned from the game: " + command.getGameID());
+        // Handle additional resign logic here
     }
 
     private void sendNotification(Session session, String message) {
@@ -94,5 +109,17 @@ public class GameWebSocketServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void broadcastMessageToGame(int gameID, ServerMessage message) {
+        sessionAuthTokens.keySet().stream()
+                .filter(session -> gameStates.containsKey(gameID))
+                .forEach(session -> {
+                    try {
+                        session.getBasicRemote().sendText(gson.toJson(message));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
     }
 }
