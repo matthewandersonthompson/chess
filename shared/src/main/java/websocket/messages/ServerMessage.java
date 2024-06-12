@@ -47,6 +47,7 @@ public class ServerMessage {
     // Added code starts here
 
     private String message;  // Added field
+    private String errorMessage;  // Added field
 
     public ServerMessage(ServerMessageType type, String message) { // Added constructor
         this.serverMessageType = type;
@@ -55,6 +56,18 @@ public class ServerMessage {
 
     public String getMessage() {  // Added method
         return this.message;
+    }
+
+    public void setMessage(String message) {  // Added method
+        this.message = message;
+    }
+
+    public String getErrorMessage() {  // Added method
+        return this.errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {  // Added method
+        this.errorMessage = errorMessage;
     }
 
     // Subclasses
@@ -80,6 +93,7 @@ public class ServerMessage {
             this.errorMessage = errorMessage;
         }
 
+        @Override
         public String getErrorMessage() {
             return errorMessage;
         }
