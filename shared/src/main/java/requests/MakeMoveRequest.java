@@ -1,21 +1,19 @@
 package requests;
 
 import chess.ChessMove;
+import websocket.commands.UserGameCommand;
 
-public class MakeMoveRequest {
-    private int gameID;
-    private ChessMove move;
-
-    public MakeMoveRequest(int gameID, ChessMove move) {
-        this.gameID = gameID;
-        this.move = move;
+public class MakeMoveRequest extends UserGameCommand.MakeMoveCommand {
+    public MakeMoveRequest(String authToken, int gameID, ChessMove move) {
+        super(authToken, gameID, move);
     }
 
+    @Override
     public int getGameID() {
-        return gameID;
+        return super.getGameID();
     }
 
     public ChessMove getMove() {
-        return move;
+        return super.getMove();
     }
 }

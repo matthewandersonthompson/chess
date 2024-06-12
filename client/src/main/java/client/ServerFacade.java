@@ -16,7 +16,7 @@ import results.ListGamesResult;
 import results.LoginResult;
 import results.RegisterResult;
 import results.MakeMoveResult;
-import websocket.messages.ServerMessage; // Import ServerMessage
+import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
 import java.io.OutputStreamWriter;
@@ -153,7 +153,7 @@ public class ServerFacade {
 
     // Add the makeMove method
     public MakeMoveResult makeMove(int gameID, ChessMove move) throws Exception {
-        MakeMoveRequest request = new MakeMoveRequest(gameID, move);
+        MakeMoveRequest request = new MakeMoveRequest(authToken, gameID, move);
         JsonObject response = sendRequest("/game/move", "POST", request);
         sendWebSocketMessage(request); // Send the move to the server via WebSocket
         return gson.fromJson(response, MakeMoveResult.class);
@@ -161,14 +161,14 @@ public class ServerFacade {
 
     // Add the leaveGame method
     public void leaveGame(int gameID) throws Exception {
-        LeaveGameRequest request = new LeaveGameRequest(gameID);
+        LeaveGameRequest request = new LeaveGameRequest(authToken, gameID);
         sendRequest("/game/leave", "POST", request);
         sendWebSocketMessage(request); // Send the leave command to the server via WebSocket
     }
 
     // Add the resignGame method
     public void resignGame(int gameID) throws Exception {
-        ResignGameRequest request = new ResignGameRequest(gameID);
+        ResignGameRequest request = new ResignGameRequest(authToken, gameID);
         sendRequest("/game/resign", "POST", request);
         sendWebSocketMessage(request); // Send the resign command to the server via WebSocket
     }
