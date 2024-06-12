@@ -135,7 +135,7 @@ public class PostloginUI {
         try {
             serverFacade.joinGame(selectedGame.getGameID(), color);
             System.out.println("Joined game successfully!");
-            new GameplayUI(new ChessGame(), color).display(); // Transition to GameplayUI
+            new GameplayUI(new ChessGame(), color, selectedGame.getGameID(), serverFacade).display(); // Transition to GameplayUI
         } catch (Exception e) {
             System.out.println("Error during joining game: " + e.getMessage());
         }

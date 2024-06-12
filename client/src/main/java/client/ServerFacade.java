@@ -7,10 +7,13 @@ import requests.CreateGameRequest;
 import requests.JoinGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
+import requests.MakeMoveRequest; // Import MakeMoveRequest
+import chess.ChessMove; // Import ChessMove
 import results.CreateGameResult;
 import results.ListGamesResult;
 import results.LoginResult;
 import results.RegisterResult;
+import results.MakeMoveResult; // Import MakeMoveResult
 
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -87,5 +90,12 @@ public class ServerFacade {
     public void joinGame(int gameID, String playerColor) throws Exception {
         JoinGameRequest request = new JoinGameRequest(playerColor, gameID);
         sendRequest("/game", "PUT", request);
+    }
+
+    // Add the makeMove method
+    public MakeMoveResult makeMove(int gameID, ChessMove move) throws Exception {
+        MakeMoveRequest request = new MakeMoveRequest(gameID, move);
+        JsonObject response = sendRequest("/game/move", "POST", request);
+        return gson.fromJson(response, MakeMoveResult.class);
     }
 }

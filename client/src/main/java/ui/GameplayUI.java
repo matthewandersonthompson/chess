@@ -1,23 +1,122 @@
+// client/src/main/java/ui/GameplayUI.java
+
 package ui;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
+import client.ServerFacade;
+
+import java.util.Collection;
+import java.util.Scanner;
 
 public class GameplayUI {
     private final ChessGame game;
     private final String playerColor;
+    private final int gameID;
+    private final ServerFacade serverFacade;
+    private final Scanner scanner = new Scanner(System.in);
 
-    public GameplayUI(ChessGame game, String playerColor) {
+    public GameplayUI(ChessGame game, String playerColor, int gameID, ServerFacade serverFacade) {
         this.game = game;
         this.playerColor = playerColor;
+        this.gameID = gameID;
+        this.serverFacade = serverFacade;
     }
 
     public void display() {
         System.out.println("Gameplay started! Your color: " + playerColor);
-        drawBoard(game.getBoard(), playerColor.equals("WHITE"));
-        drawBoard(game.getBoard(), !playerColor.equals("WHITE"));
+        displayHelp();
+        while (true) {
+            System.out.println("Enter a command:");
+            String command = scanner.nextLine().trim().toLowerCase();
+            switch (command) {
+                case "help":
+                    displayHelp();
+                    break;
+                case "redraw":
+                    drawBoard(game.getBoard(), playerColor.equals("WHITE"));
+                    break;
+                case "leave":
+                    handleLeave();
+                    return;
+                case "move":
+                    handleMove();
+                    break;
+                case "resign":
+                    handleResign();
+                    break;
+                case "highlight":
+                    handleHighlight();
+                    break;
+                default:
+                    System.out.println("Unknown command. Type 'help' for a list of commands.");
+            }
+        }
+    }
+
+    private void displayHelp() {
+        System.out.println("Commands:");
+        System.out.println("  help      - Display this help text");
+        System.out.println("  redraw    - Redraw the chess board");
+        System.out.println("  leave     - Leave the game");
+        System.out.println("  move      - Make a move");
+        System.out.println("  resign    - Resign from the game");
+        System.out.println("  highlight - Highlight legal moves");
+    }
+
+    private void handleLeave() {
+        System.out.println("Leaving the game...");
+        // Implement the logic to leave the game
+        System.out.println("You have left the game.");
+    }
+
+    private void handleMove() {
+        System.out.println("Enter your move (e.g., e2 e4):");
+        String moveInput = scanner.nextLine().trim();
+        String[] positions = moveInput.split(" ");
+        if (positions.length != 2) {
+            System.out.println("Invalid input. Please enter the move in the format 'e2 e4'.");
+            return;
+        }
+
+        ChessPosition startPosition = parsePosition(positions[0]);
+        ChessPosition endPosition = parsePosition(positions[1]);
+        ChessMove move = new ChessMove(startPosition, endPosition, null);
+
+        try {
+            // Assuming makeMove method exists in ServerFacade
+            serverFacade.makeMove(gameID, move);
+            System.out.println("Move made successfully.");
+        } catch (Exception e) {
+            System.out.println("Error making move: " + e.getMessage());
+        }
+    }
+
+    private void handleResign() {
+        System.out.println("Are you sure you want to resign? (yes/no)");
+        String confirmation = scanner.nextLine().trim().toLowerCase();
+        if (confirmation.equals("yes")) {
+            System.out.println("You have resigned from the game.");
+            // Implement the logic to resign from the game
+        } else {
+            System.out.println("Resignation cancelled.");
+        }
+    }
+
+    private void handleHighlight() {
+        System.out.println("Enter the position of the piece to highlight (e.g., e2):");
+        String positionInput = scanner.nextLine().trim();
+        ChessPosition position = parsePosition(positionInput);
+
+        try {
+            Collection<ChessMove> legalMoves = game.validMoves(position);
+            highlightMoves(position, legalMoves);
+        } catch (Exception e) {
+            System.out.println("Error highlighting moves: " + e.getMessage());
+        }
     }
 
     private void drawBoard(ChessBoard board, boolean isWhiteBottom) {
@@ -96,5 +195,19 @@ public class GameplayUI {
                 symbol = " ";
         }
         return symbol;
+    }
+
+    private ChessPosition parsePosition(String pos) {
+        int col = pos.charAt(0) - 'a' + 1;
+        int row = Character.getNumericValue(pos.charAt(1));
+        return new ChessPosition(row, col);
+    }
+
+    private void highlightMoves(ChessPosition position, Collection<ChessMove> legalMoves) {
+        System.out.println("Highlighting moves for position: " + position);
+        for (ChessMove move : legalMoves) {
+            System.out.println("Legal move to: " + move.getEndPosition());
+        }
+        drawBoard(game.getBoard(), playerColor.equals("WHITE"));
     }
 }
