@@ -1,5 +1,3 @@
-// client/src/main/java/ui/GameplayUI.java
-
 package ui;
 
 import chess.ChessBoard;
@@ -8,8 +6,8 @@ import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import client.ServerFacade;
+import websocket.messages.ServerMessage;
 
-import java.util.Collection;
 import java.util.Scanner;
 
 public class GameplayUI {
@@ -28,9 +26,9 @@ public class GameplayUI {
 
     public void display() {
         System.out.println("Gameplay started! Your color: " + playerColor);
-        displayHelp();
+        drawBoard(game.getBoard(), playerColor.equals("WHITE"));
         while (true) {
-            System.out.println("Enter a command:");
+            System.out.println("Enter a command (help, redraw, leave, move, resign, highlight):");
             String command = scanner.nextLine().trim().toLowerCase();
             switch (command) {
                 case "help":
@@ -40,16 +38,16 @@ public class GameplayUI {
                     drawBoard(game.getBoard(), playerColor.equals("WHITE"));
                     break;
                 case "leave":
-                    handleLeave();
+                    leaveGame();
                     return;
                 case "move":
-                    handleMove();
+                    makeMove();
                     break;
                 case "resign":
-                    handleResign();
+                    resignGame();
                     break;
                 case "highlight":
-                    handleHighlight();
+                    highlightLegalMoves();
                     break;
                 default:
                     System.out.println("Unknown command. Type 'help' for a list of commands.");
@@ -63,65 +61,12 @@ public class GameplayUI {
         System.out.println("  redraw    - Redraw the chess board");
         System.out.println("  leave     - Leave the game");
         System.out.println("  move      - Make a move");
-        System.out.println("  resign    - Resign from the game");
+        System.out.println("  resign    - Resign the game");
         System.out.println("  highlight - Highlight legal moves");
-    }
-
-    private void handleLeave() {
-        System.out.println("Leaving the game...");
-        // Implement the logic to leave the game
-        System.out.println("You have left the game.");
-    }
-
-    private void handleMove() {
-        System.out.println("Enter your move (e.g., e2 e4):");
-        String moveInput = scanner.nextLine().trim();
-        String[] positions = moveInput.split(" ");
-        if (positions.length != 2) {
-            System.out.println("Invalid input. Please enter the move in the format 'e2 e4'.");
-            return;
-        }
-
-        ChessPosition startPosition = parsePosition(positions[0]);
-        ChessPosition endPosition = parsePosition(positions[1]);
-        ChessMove move = new ChessMove(startPosition, endPosition, null);
-
-        try {
-            // Assuming makeMove method exists in ServerFacade
-            serverFacade.makeMove(gameID, move);
-            System.out.println("Move made successfully.");
-        } catch (Exception e) {
-            System.out.println("Error making move: " + e.getMessage());
-        }
-    }
-
-    private void handleResign() {
-        System.out.println("Are you sure you want to resign? (yes/no)");
-        String confirmation = scanner.nextLine().trim().toLowerCase();
-        if (confirmation.equals("yes")) {
-            System.out.println("You have resigned from the game.");
-            // Implement the logic to resign from the game
-        } else {
-            System.out.println("Resignation cancelled.");
-        }
-    }
-
-    private void handleHighlight() {
-        System.out.println("Enter the position of the piece to highlight (e.g., e2):");
-        String positionInput = scanner.nextLine().trim();
-        ChessPosition position = parsePosition(positionInput);
-
-        try {
-            Collection<ChessMove> legalMoves = game.validMoves(position);
-            highlightMoves(position, legalMoves);
-        } catch (Exception e) {
-            System.out.println("Error highlighting moves: " + e.getMessage());
-        }
     }
 
     private void drawBoard(ChessBoard board, boolean isWhiteBottom) {
         System.out.println("Drawing board with " + (isWhiteBottom ? "white" : "black") + " at bottom:");
-
         if (isWhiteBottom) {
             drawBoardWithLabels(board, 8, 1, -1, true);
         } else {
@@ -197,17 +142,69 @@ public class GameplayUI {
         return symbol;
     }
 
-    private ChessPosition parsePosition(String pos) {
-        int col = pos.charAt(0) - 'a' + 1;
-        int row = Character.getNumericValue(pos.charAt(1));
-        return new ChessPosition(row, col);
+    private void makeMove() {
+        System.out.println("Enter your move in the format 'startRow startCol endRow endCol' (e.g., 2 2 3 2 for moving a piece from b2 to b3):");
+        try {
+            int startRow = Integer.parseInt(scanner.next());
+            int startCol = Integer.parseInt(scanner.next());
+            int endRow = Integer.parseInt(scanner.next());
+            int endCol = Integer.parseInt(scanner.next());
+            ChessMove move = new ChessMove(new ChessPosition(startRow, startCol), new ChessPosition(endRow, endCol), null);
+            serverFacade.makeMove(gameID, move);
+            System.out.println("Move made successfully!");
+            drawBoard(game.getBoard(), playerColor.equals("WHITE"));
+        } catch (Exception e) {
+            System.out.println("Error making move: " + e.getMessage());
+        }
     }
 
-    private void highlightMoves(ChessPosition position, Collection<ChessMove> legalMoves) {
-        System.out.println("Highlighting moves for position: " + position);
-        for (ChessMove move : legalMoves) {
-            System.out.println("Legal move to: " + move.getEndPosition());
+    private void leaveGame() {
+        System.out.println("Leaving the game...");
+        // Handle leaving the game (e.g., notify the server, clean up resources)
+    }
+
+    private void resignGame() {
+        System.out.println("Are you sure you want to resign? (yes/no)");
+        String confirmation = scanner.next().trim().toLowerCase();
+        if ("yes".equals(confirmation)) {
+            System.out.println("You have resigned from the game.");
+            // Handle resigning the game (e.g., notify the server)
+        } else {
+            System.out.println("Resignation cancelled.");
         }
-        drawBoard(game.getBoard(), playerColor.equals("WHITE"));
+    }
+
+    private void highlightLegalMoves() {
+        System.out.println("Enter the position of the piece you want to highlight in the format 'row col' (e.g., 2 2 for the piece at b2):");
+        try {
+            int row = Integer.parseInt(scanner.next());
+            int col = Integer.parseInt(scanner.next());
+            ChessPosition position = new ChessPosition(row, col);
+            var legalMoves = game.getLegalMoves(position); // Ensure you have a method to get legal moves in ChessGame
+            var board = game.getBoard();
+            for (ChessMove move : legalMoves) {
+                var endPos = move.getEndPosition();
+                board.highlightMove(endPos); // Ensure you have a method to highlight a position on the board
+            }
+            drawBoard(board, playerColor.equals("WHITE"));
+        } catch (Exception e) {
+            System.out.println("Error highlighting moves: " + e.getMessage());
+        }
+    }
+
+    private void handleServerMessage(ServerMessage message) {
+        switch (message.getServerMessageType()) {
+            case NOTIFICATION:
+                System.out.println("Notification: " + message.getMessage());
+                break;
+            case ERROR:
+                System.out.println("Error: " + message.getErrorMessage());
+                break;
+            case LOAD_GAME:
+                System.out.println("Loading game state...");
+                // Update game state and redraw board
+                drawBoard(game.getBoard(), playerColor.equals("WHITE"));
+                break;
+        }
     }
 }
