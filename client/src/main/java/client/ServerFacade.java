@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -16,6 +17,7 @@ import results.ListGamesResult;
 import results.LoginResult;
 import results.RegisterResult;
 import results.MakeMoveResult;
+import ui.GameplayUI;
 import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
@@ -73,15 +75,21 @@ public class ServerFacade {
         ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
         switch (serverMessage.getServerMessageType()) {
             case LOAD_GAME:
-                // Handle game load message
+                handleLoadGameMessage((ServerMessage.LoadGameMessage) serverMessage);
                 break;
             case ERROR:
-                // Handle error message
+                System.out.println("Error received: " + serverMessage.getErrorMessage());
                 break;
             case NOTIFICATION:
                 System.out.println("Notification received: " + serverMessage.getMessage());
                 break;
         }
+    }
+
+    private void handleLoadGameMessage(ServerMessage.LoadGameMessage loadGameMessage) {
+        ChessGame game = loadGameMessage.getGame();
+        GameplayUI gameplayUI = new GameplayUI(game, "WHITE", 0, this); // Adjusted the parameter as there is no gameID
+        gameplayUI.display();
     }
 
     public void sendWebSocketMessage(Object message) {

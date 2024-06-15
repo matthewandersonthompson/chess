@@ -24,6 +24,7 @@ public class GameplayUI {
     public void display() {
         System.out.println("Gameplay started! Your color: " + playerColor);
         displayHelp();
+        drawBoard(game.getBoard(), playerColor.equals("WHITE"));
         while (true) {
             System.out.println("Enter a command:");
             String command = scanner.nextLine().trim().toLowerCase();
@@ -90,6 +91,7 @@ public class GameplayUI {
             serverFacade.makeMove(gameID, move);
             System.out.println("Move made successfully.");
             notify("Move made from " + move.getStartPosition() + " to " + move.getEndPosition());
+            drawBoard(game.getBoard(), playerColor.equals("WHITE")); // Redraw the board after the move
         } catch (Exception e) {
             System.out.println("Error making move: " + e.getMessage());
         }
