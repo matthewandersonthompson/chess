@@ -4,20 +4,11 @@ import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import requests.CreateGameRequest;
-import requests.JoinGameRequest;
-import requests.LoginRequest;
-import requests.RegisterRequest;
-import requests.MakeMoveRequest;
-import requests.LeaveGameRequest;
-import requests.ResignGameRequest;
+import requests.*;
 import chess.ChessMove;
-import results.CreateGameResult;
-import results.ListGamesResult;
-import results.LoginResult;
-import results.RegisterResult;
-import results.MakeMoveResult;
+import results.*;
 import ui.GameplayUI;
+import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
@@ -179,6 +170,12 @@ public class ServerFacade {
         ResignGameRequest request = new ResignGameRequest(authToken, gameID);
         sendRequest("/game/resign", "POST", request);
         sendWebSocketMessage(request); // Send the resign command to the server via WebSocket
+    }
+
+    // Add the connect method
+    public void connect(int gameID) throws Exception {
+        UserGameCommand.ConnectCommand connectCommand = new UserGameCommand.ConnectCommand(authToken, gameID);
+        sendWebSocketMessage(connectCommand);
     }
 
     // Getter for authToken
