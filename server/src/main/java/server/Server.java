@@ -7,7 +7,6 @@ import handlers.*;
 import service.*;
 import spark.Spark;
 import websocket.WebSocketHandler;
-import javax.websocket.server.ServerEndpointConfig;
 
 public class Server {
 
@@ -35,6 +34,11 @@ public class Server {
         var userHandler = new UserHandler(userService);
         var gameHandler = new GameHandler(gameService, authService);
 
+        WebSocketHandler.setServices(gameService, authService);
+
+        // Configure WebSocket before HTTP routes
+        Spark.webSocket("/ws", WebSocketHandler.class);
+
         Spark.delete("/db", clearHandler);
         Spark.post("/user", userHandler.handleRegister);
         Spark.post("/session", userHandler.handleLogin);
@@ -43,16 +47,7 @@ public class Server {
         Spark.get("/game", gameHandler.handleListGames);
         Spark.put("/game", gameHandler.handleJoinGame);
 
-        // WebSocket Configuration
-        ServerEndpointConfig config = ServerEndpointConfig.Builder.create(WebSocketHandler.class, "/ws")
-                .configurator(new ServerEndpointConfig.Configurator() {
-                    @Override
-                    public <T> T getEndpointInstance(Class<T> endpointClass) {
-                        return endpointClass.cast(new WebSocketHandler(gameService, authService));
-                    }
-                }).build();
-
-        Spark.webSocket("/ws", WebSocketHandler.class);
+        Spark.init();
 
         Spark.awaitInitialization();
         int actualPort = Spark.port();

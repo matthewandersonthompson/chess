@@ -1,37 +1,42 @@
 package websocket;
 
 import com.google.gson.Gson;
+import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.*;
 import service.AuthService;
 import service.GameService;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
-import javax.websocket.*;
-import javax.websocket.server.ServerEndpoint;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@ServerEndpoint("/ws")
+@WebSocket
 public class WebSocketHandler {
 
     private static final Map<Session, String> sessionUserMap = new HashMap<>();
     private static final Gson gson = new Gson();
 
-    private final GameService gameService;
-    private final AuthService authService;
+    private static GameService gameService;
+    private static AuthService authService;
 
-    public WebSocketHandler(GameService gameService, AuthService authService) {
-        this.gameService = gameService;
-        this.authService = authService;
+    public WebSocketHandler() {
+        // Default constructor needed for @WebSocket
     }
 
-    @OnOpen
-    public void onOpen(Session session) {
-        System.out.println("WebSocket connection opened: " + session.getId());
+    public static void setServices(GameService gameService, AuthService authService) {
+        WebSocketHandler.gameService = gameService;
+        WebSocketHandler.authService = authService;
     }
 
-    @OnMessage
-    public void onMessage(String message, Session session) {
+    @OnWebSocketConnect
+    public void onConnect(Session session) {
+        System.out.println("WebSocket connection opened: " + session.getRemoteAddress().getAddress());
+    }
+
+    @OnWebSocketMessage
+    public void onMessage(Session session, String message) {
         System.out.println("Received message: " + message);
         UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
 
@@ -51,13 +56,13 @@ public class WebSocketHandler {
         }
     }
 
-    @OnClose
-    public void onClose(Session session, CloseReason closeReason) {
-        System.out.println("WebSocket connection closed: " + session.getId());
+    @OnWebSocketClose
+    public void onClose(Session session, int statusCode, String reason) {
+        System.out.println("WebSocket connection closed: " + session.getRemoteAddress().getAddress());
         sessionUserMap.remove(session);
     }
 
-    @OnError
+    @OnWebSocketError
     public void onError(Session session, Throwable throwable) {
         throwable.printStackTrace();
     }
@@ -68,7 +73,7 @@ public class WebSocketHandler {
             sessionUserMap.put(session, username);
             // Add additional logic for connecting to a game if needed
             ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
-            session.getAsyncRemote().sendText(gson.toJson(message));
+            sendMessage(session, gson.toJson(message));
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to connect: " + e.getMessage());
         }
@@ -83,7 +88,7 @@ public class WebSocketHandler {
             }
             // Add logic to process the move
             ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-            session.getAsyncRemote().sendText(gson.toJson(message));
+            sendMessage(session, gson.toJson(message));
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to make move: " + e.getMessage());
         }
@@ -98,7 +103,7 @@ public class WebSocketHandler {
             }
             // Add logic for leaving the game
             ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-            session.getAsyncRemote().sendText(gson.toJson(message));
+            sendMessage(session, gson.toJson(message));
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to leave game: " + e.getMessage());
         }
@@ -113,15 +118,23 @@ public class WebSocketHandler {
             }
             // Add logic for resigning the game
             ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-            session.getAsyncRemote().sendText(gson.toJson(message));
+            sendMessage(session, gson.toJson(message));
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to resign: " + e.getMessage());
+        }
+    }
+
+    private void sendMessage(Session session, String message) {
+        try {
+            session.getRemote().sendString(message);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     private void sendErrorMessage(Session session, String errorMessage) {
         ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
         message.setErrorMessage(errorMessage);
-        session.getAsyncRemote().sendText(gson.toJson(message));
+        sendMessage(session, gson.toJson(message));
     }
 }
