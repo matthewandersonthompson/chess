@@ -180,4 +180,9 @@ public class ServerFacade {
         sendRequest("/game/resign", "POST", request);
         sendWebSocketMessage(request); // Send the resign command to the server via WebSocket
     }
+
+    // Getter for authToken
+    public String getAuthToken() {
+        return authToken;
+    }
 }

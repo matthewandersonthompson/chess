@@ -5,6 +5,7 @@ import chess.ChessGame;
 import model.GameData;
 import results.CreateGameResult;
 import results.ListGamesResult;
+import websocket.commands.UserGameCommand;
 
 import java.util.List;
 import java.util.Scanner;
@@ -28,7 +29,7 @@ public class PostloginUI {
             System.out.println("  create game   - Create a new game");
             System.out.println("  list games    - List all games");
             System.out.println("  play game     - Join a game to play");
-            System.out.println("  observe game  - Join a game to observe (functionality added in Phase 6)");
+            System.out.println("  observe game  - Join a game to observe");
 
             String command = scanner.nextLine().trim().toLowerCase();
             switch (command) {
@@ -63,7 +64,7 @@ public class PostloginUI {
         System.out.println("  create game   - Create a new game");
         System.out.println("  list games    - List all games");
         System.out.println("  play game     - Join a game to play");
-        System.out.println("  observe game  - Join a game to observe (functionality added in Phase 6)");
+        System.out.println("  observe game  - Join a game to observe");
     }
 
     private void handleLogout() {
@@ -142,7 +143,34 @@ public class PostloginUI {
     }
 
     private void handleObserveGame() {
-        // Functionality to be added in Phase 6
-        System.out.println("Observe game functionality will be added in Phase 6.");
+        if (lastListedGames == null || lastListedGames.isEmpty()) {
+            System.out.println("No games listed. Please use the 'list games' command first.");
+            return;
+        }
+
+        System.out.println("Enter the number of the game you want to observe:");
+        int gameNumber;
+        try {
+            gameNumber = Integer.parseInt(scanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid number. Please try again.");
+            return;
+        }
+
+        if (gameNumber < 1 || gameNumber > lastListedGames.size()) {
+            System.out.println("Invalid game number. Please try again.");
+            return;
+        }
+
+        GameData selectedGame = lastListedGames.get(gameNumber - 1);
+
+        try {
+            // Connect to the game as an observer
+            serverFacade.sendWebSocketMessage(new UserGameCommand.ConnectCommand(serverFacade.getAuthToken(), selectedGame.getGameID()));
+            System.out.println("Observing game successfully!");
+            new GameplayUI(new ChessGame(), "WHITE", selectedGame.getGameID(), serverFacade).display(); // Transition to GameplayUI
+        } catch (Exception e) {
+            System.out.println("Error during observing game: " + e.getMessage());
+        }
     }
 }
