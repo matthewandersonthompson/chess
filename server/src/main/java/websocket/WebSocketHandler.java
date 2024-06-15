@@ -1,5 +1,6 @@
 package websocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
@@ -72,8 +73,9 @@ public class WebSocketHandler {
             String username = authService.validateAuthToken(command.getAuthString());
             sessionUserMap.put(session, username);
             // Add additional logic for connecting to a game if needed
-            ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
+            ServerMessage message = new ServerMessage.LoadGameMessage(new ChessGame());
             sendMessage(session, gson.toJson(message));
+            broadcastNotification(session, username + " connected to the game.");
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to connect: " + e.getMessage());
         }
@@ -87,8 +89,9 @@ public class WebSocketHandler {
                 return;
             }
             // Add logic to process the move
-            ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            ServerMessage message = new ServerMessage.LoadGameMessage(new ChessGame());
             sendMessage(session, gson.toJson(message));
+            broadcastNotification(session, username + " made a move.");
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to make move: " + e.getMessage());
         }
@@ -102,8 +105,8 @@ public class WebSocketHandler {
                 return;
             }
             // Add logic for leaving the game
-            ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-            sendMessage(session, gson.toJson(message));
+            sessionUserMap.remove(session);
+            broadcastNotification(session, username + " left the game.");
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to leave game: " + e.getMessage());
         }
@@ -117,8 +120,7 @@ public class WebSocketHandler {
                 return;
             }
             // Add logic for resigning the game
-            ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-            sendMessage(session, gson.toJson(message));
+            broadcastNotification(session, username + " resigned from the game.");
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to resign: " + e.getMessage());
         }
@@ -133,8 +135,16 @@ public class WebSocketHandler {
     }
 
     private void sendErrorMessage(Session session, String errorMessage) {
-        ServerMessage message = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
-        message.setErrorMessage(errorMessage);
+        ServerMessage message = new ServerMessage.ErrorMessage(errorMessage);
         sendMessage(session, gson.toJson(message));
+    }
+
+    private void broadcastNotification(Session session, String notification) {
+        ServerMessage message = new ServerMessage.NotificationMessage(notification);
+        for (Session s : sessionUserMap.keySet()) {
+            if (s.isOpen() && !s.equals(session)) {
+                sendMessage(s, gson.toJson(message));
+            }
+        }
     }
 }
