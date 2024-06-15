@@ -50,16 +50,19 @@ public class WebSocketHandler {
 
         switch (command.getCommandType()) {
             case CONNECT:
-                handleConnect(session, (UserGameCommand.ConnectCommand) command);
+                handleConnect(session, gson.fromJson(message, UserGameCommand.ConnectCommand.class));
                 break;
             case MAKE_MOVE:
-                handleMakeMove(session, (UserGameCommand.MakeMoveCommand) command);
+                handleMakeMove(session, gson.fromJson(message, UserGameCommand.MakeMoveCommand.class));
                 break;
             case LEAVE:
-                handleLeave(session, (UserGameCommand.LeaveCommand) command);
+                handleLeave(session, gson.fromJson(message, UserGameCommand.LeaveCommand.class));
                 break;
             case RESIGN:
-                handleResign(session, (UserGameCommand.ResignCommand) command);
+                handleResign(session, gson.fromJson(message, UserGameCommand.ResignCommand.class));
+                break;
+            default:
+                sendErrorMessage(session, "Unknown command type.");
                 break;
         }
     }
