@@ -50,4 +50,13 @@ public class GameData {
     public void setGameState(String gameState) {
         this.gameState = gameState;
     }
+
+    // Add methods to get and set the board state
+    public String getBoardState() {
+        return gameState; // Assuming gameState holds the board state
+    }
+
+    public void setBoardState(String boardState) {
+        this.gameState = boardState; // Assuming gameState holds the board state
+    }
 }

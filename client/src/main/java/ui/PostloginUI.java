@@ -136,6 +136,7 @@ public class PostloginUI {
         try {
             serverFacade.joinGame(selectedGame.getGameID(), color);
             System.out.println("Joined game successfully!");
+            serverFacade.connect(selectedGame.getGameID()); // Connect to the game via WebSocket
             new GameplayUI(new ChessGame(), color, selectedGame.getGameID(), serverFacade).display(); // Transition to GameplayUI
         } catch (Exception e) {
             System.out.println("Error during joining game: " + e.getMessage());
@@ -165,8 +166,7 @@ public class PostloginUI {
         GameData selectedGame = lastListedGames.get(gameNumber - 1);
 
         try {
-            // Connect to the game as an observer
-            serverFacade.sendWebSocketMessage(new UserGameCommand.ConnectCommand(serverFacade.getAuthToken(), selectedGame.getGameID()));
+            serverFacade.connect(selectedGame.getGameID()); // Connect to the game via WebSocket
             System.out.println("Observing game successfully!");
             new GameplayUI(new ChessGame(), "WHITE", selectedGame.getGameID(), serverFacade).display(); // Transition to GameplayUI
         } catch (Exception e) {

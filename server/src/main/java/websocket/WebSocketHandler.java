@@ -41,6 +41,13 @@ public class WebSocketHandler {
         System.out.println("Received message: " + message);
         UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
 
+        try {
+            validateCommand(command);
+        } catch (Exception e) {
+            sendErrorMessage(session, e.getMessage());
+            return;
+        }
+
         switch (command.getCommandType()) {
             case CONNECT:
                 handleConnect(session, (UserGameCommand.ConnectCommand) command);
@@ -68,6 +75,29 @@ public class WebSocketHandler {
         throwable.printStackTrace();
     }
 
+    private void validateCommand(UserGameCommand command) throws Exception {
+        String username = authService.validateAuthToken(command.getAuthString());
+        if (username == null) {
+            throw new Exception("Invalid auth token.");
+        }
+
+        switch (command.getCommandType()) {
+            case CONNECT:
+            case MAKE_MOVE:
+            case LEAVE:
+            case RESIGN:
+                if (command instanceof UserGameCommand.ConnectCommand) {
+                    int gameID = ((UserGameCommand.ConnectCommand) command).getGameID();
+                    if (!gameService.isValidGameID(gameID)) {
+                        throw new Exception("Invalid game ID.");
+                    }
+                }
+                break;
+            default:
+                throw new Exception("Unknown command type.");
+        }
+    }
+
     private void handleConnect(Session session, UserGameCommand.ConnectCommand command) {
         try {
             String username = authService.validateAuthToken(command.getAuthString());
@@ -88,10 +118,17 @@ public class WebSocketHandler {
                 sendErrorMessage(session, "User not authenticated.");
                 return;
             }
-            // Add logic to process the move
-            ServerMessage message = new ServerMessage.LoadGameMessage(new ChessGame());
+
+            // Process the move and get the updated game state
+            ChessGame game = gameService.processMove(command.getGameID(), command.getMove());
+
+            // Check for check, checkmate, or stalemate
+            String status = gameService.checkForCheckAndCheckmate(game, game.getTeamTurn());
+
+            // Send updated game state back to the client
+            ServerMessage message = new ServerMessage.LoadGameMessage(game);
             sendMessage(session, gson.toJson(message));
-            broadcastNotification(session, username + " made a move.");
+            broadcastNotification(session, username + " made a move. Status: " + status);
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to make move: " + e.getMessage());
         }
