@@ -104,6 +104,10 @@ public class WebSocketHandler {
     private void handleConnect(Session session, UserGameCommand.ConnectCommand command) {
         try {
             String username = authService.validateAuthToken(command.getAuthString());
+            if (!gameService.isValidGameID(command.getGameID())) {
+                sendErrorMessage(session, "Invalid game ID.");
+                return;
+            }
             sessionUserMap.put(session, username);
             // Add additional logic for connecting to a game if needed
             ServerMessage message = new ServerMessage.LoadGameMessage(new ChessGame());

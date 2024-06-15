@@ -86,16 +86,21 @@ public class ServerMessage {
     }
 
     public static class ErrorMessage extends ServerMessage {
-        private final String errorMessage;
+        private final String error;
 
-        public ErrorMessage(String errorMessage) {
+        public ErrorMessage(String error) {
             super(ServerMessageType.ERROR);
-            this.errorMessage = errorMessage;
+            this.error = error;
+            this.setErrorMessage(error); // Ensure the errorMessage field is set
+        }
+
+        public String getError() {
+            return error;
         }
 
         @Override
         public String getErrorMessage() {
-            return errorMessage;
+            return error;
         }
     }
 
