@@ -3,13 +3,11 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.DatabaseManager;
 import dataaccess.MySQLDataAccess;
-import service.AuthService;
-import service.GameService;
-import service.UserService;
-import handlers.ClearHandler;
-import handlers.GameHandler;
-import handlers.UserHandler;
+import handlers.*;
+import service.*;
 import spark.Spark;
+import websocket.WebSocketHandler;
+import javax.websocket.server.ServerEndpointConfig;
 
 public class Server {
 
@@ -44,6 +42,17 @@ public class Server {
         Spark.post("/game", gameHandler.handleCreateGame);
         Spark.get("/game", gameHandler.handleListGames);
         Spark.put("/game", gameHandler.handleJoinGame);
+
+        // WebSocket Configuration
+        ServerEndpointConfig config = ServerEndpointConfig.Builder.create(WebSocketHandler.class, "/ws")
+                .configurator(new ServerEndpointConfig.Configurator() {
+                    @Override
+                    public <T> T getEndpointInstance(Class<T> endpointClass) {
+                        return endpointClass.cast(new WebSocketHandler(gameService, authService));
+                    }
+                }).build();
+
+        Spark.webSocket("/ws", WebSocketHandler.class);
 
         Spark.awaitInitialization();
         int actualPort = Spark.port();
