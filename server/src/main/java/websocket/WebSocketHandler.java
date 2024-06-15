@@ -110,9 +110,10 @@ public class WebSocketHandler {
             }
             sessionUserMap.put(session, username);
             // Add additional logic for connecting to a game if needed
-            ServerMessage message = new ServerMessage.LoadGameMessage(new ChessGame());
+            ChessGame game = gameService.loadGame(command.getGameID());
+            ServerMessage message = new ServerMessage.LoadGameMessage(game);
             sendMessage(session, gson.toJson(message));
-            broadcastNotification(session, username + " connected to the game.");
+            broadcastNotificationExceptSender(session, username + " connected to the game.");
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to connect: " + e.getMessage());
         }
@@ -129,15 +130,24 @@ public class WebSocketHandler {
             // Process the move and get the updated game state
             ChessGame game = gameService.processMove(command.getGameID(), command.getMove());
 
-            // Check for check, checkmate, or stalemate
-            String status = gameService.checkForCheckAndCheckmate(game, game.getTeamTurn());
+            // Send updated game state back to the player who made the move
+            ServerMessage loadGameMessage = new ServerMessage.LoadGameMessage(game);
+            sendMessage(session, gson.toJson(loadGameMessage));
 
-            // Send updated game state back to the client
-            ServerMessage message = new ServerMessage.LoadGameMessage(game);
-            sendMessage(session, gson.toJson(message));
-            broadcastNotification(session, username + " made a move. Status: " + status);
+            // Send updated game state and notification about the move to all other clients
+            String moveDescription = String.format("%s moved from %s to %s", username, command.getMove().getStartPosition(), command.getMove().getEndPosition());
+            broadcastMessageToAllExceptSender(session, gson.toJson(loadGameMessage));
+            broadcastNotificationExceptSender(session, moveDescription);
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to make move: " + e.getMessage());
+        }
+    }
+
+    private void broadcastMessageToAllExceptSender(Session sender, String message) {
+        for (Session session : sessionUserMap.keySet()) {
+            if (session.isOpen() && !session.equals(sender)) {
+                sendMessage(session, message);
+            }
         }
     }
 
@@ -183,11 +193,20 @@ public class WebSocketHandler {
         sendMessage(session, gson.toJson(message));
     }
 
-    private void broadcastNotification(Session session, String notification) {
+    private void broadcastNotification(Session sender, String notification) {
         ServerMessage message = new ServerMessage.NotificationMessage(notification);
-        for (Session s : sessionUserMap.keySet()) {
-            if (s.isOpen() && !s.equals(session)) {
-                sendMessage(s, gson.toJson(message));
+        for (Session session : sessionUserMap.keySet()) {
+            if (session.isOpen()) {
+                sendMessage(session, gson.toJson(message));
+            }
+        }
+    }
+
+    private void broadcastNotificationExceptSender(Session sender, String notification) {
+        ServerMessage message = new ServerMessage.NotificationMessage(notification);
+        for (Session session : sessionUserMap.keySet()) {
+            if (session.isOpen() && !session.equals(sender)) {
+                sendMessage(session, gson.toJson(message));
             }
         }
     }
