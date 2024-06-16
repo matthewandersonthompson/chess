@@ -127,8 +127,14 @@ public class WebSocketHandler {
                 return;
             }
 
+            ChessGame game = gameService.loadGame(command.getGameID());
+            if (game.getTeamTurn() != gameService.getPlayerTeam(command.getGameID(), username)) {
+                sendErrorMessage(session, "It's not your turn.");
+                return;
+            }
+
             // Process the move and get the updated game state
-            ChessGame game = gameService.processMove(command.getGameID(), command.getMove());
+            game = gameService.processMove(command.getGameID(), command.getMove());
 
             // Send updated game state back to the player who made the move
             ServerMessage loadGameMessage = new ServerMessage.LoadGameMessage(game);

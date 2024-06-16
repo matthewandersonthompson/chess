@@ -111,7 +111,6 @@ public class GameService {
         return chessBoard;
     }
 
-    // Add the new methods
     public boolean isValidGameID(int gameID) throws DataAccessException {
         return dataAccess.getGame(gameID) != null;
     }
@@ -132,5 +131,20 @@ public class GameService {
             return "stalemate";
         }
         return "none";
+    }
+
+    // New method to get the player's team color
+    public ChessGame.TeamColor getPlayerTeam(int gameID, String username) throws DataAccessException {
+        GameData gameData = dataAccess.getGame(gameID);
+        if (gameData == null) {
+            throw new DataAccessException("Game not found");
+        }
+        if (username.equals(gameData.getWhiteUsername())) {
+            return ChessGame.TeamColor.WHITE;
+        } else if (username.equals(gameData.getBlackUsername())) {
+            return ChessGame.TeamColor.BLACK;
+        } else {
+            throw new DataAccessException("User not part of this game");
+        }
     }
 }
