@@ -31,6 +31,11 @@ public class UserGameCommand {
         return authToken;
     }
 
+    // Add the getAuthToken method
+    public String getAuthToken() {
+        return authToken;
+    }
+
     public CommandType getCommandType() {
         return this.commandType;
     }

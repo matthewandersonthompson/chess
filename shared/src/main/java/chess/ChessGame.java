@@ -9,6 +9,7 @@ public class ChessGame {
     private ChessBoard board;
     private TeamColor currentTurn;
     private Map<ChessMove, ChessPiece> capturedPieces;
+    private boolean gameOver; // Add this field
 
     //initialize all of the stuff for ChessGame
     public ChessGame() {
@@ -16,6 +17,7 @@ public class ChessGame {
         this.board.resetBoard();
         this.currentTurn = TeamColor.WHITE;
         this.capturedPieces = new HashMap<>();
+        this.gameOver = false; // Initialize the field
     }
 
     //return all of the valid moves for a piece at a given position
@@ -31,7 +33,7 @@ public class ChessGame {
         return moves;
     }
 
-    //check if any move that happens migh leave the king in check
+    //check if any move that happens might leave the king in check
     private boolean leavesKingInCheck(TeamColor teamColor, ChessMove move) {
         executeMove(move);
         boolean inCheck = isInCheck(teamColor);
@@ -63,7 +65,7 @@ public class ChessGame {
         toggleTurn();
     }
 
-    //noww check if the specific king is in check
+    //now check if the specific king is in check
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition kingPosition = findKingPosition(teamColor);
         return kingPosition != null && isPositionUnderAttack(kingPosition, teamColor);
@@ -140,7 +142,7 @@ public class ChessGame {
         return false;
     }
 
-    //do we hhave a valid move??
+    //do we have a valid move?
     private boolean hasAnyValidMove(TeamColor teamColor) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
@@ -191,5 +193,14 @@ public class ChessGame {
 
     public enum TeamColor {
         WHITE, BLACK;
+    }
+
+    // Add the new methods
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
     }
 }

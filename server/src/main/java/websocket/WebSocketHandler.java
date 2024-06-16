@@ -2,12 +2,19 @@ package websocket;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import dataaccess.DataAccessException; // Add this import
+import dataaccess.DataAccessException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import service.AuthService;
 import service.GameService;
+import websocket.commands.Connect;
+import websocket.commands.Leave;
+import websocket.commands.MakeMove;
+import websocket.commands.Resign;
 import websocket.commands.UserGameCommand;
+import websocket.messages.Error;
+import websocket.messages.LoadGame;
+import websocket.messages.Notification;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -51,16 +58,16 @@ public class WebSocketHandler {
 
         switch (command.getCommandType()) {
             case CONNECT:
-                handleConnect(session, gson.fromJson(message, UserGameCommand.ConnectCommand.class));
+                handleConnect(session, gson.fromJson(message, Connect.class));
                 break;
             case MAKE_MOVE:
-                handleMakeMove(session, gson.fromJson(message, UserGameCommand.MakeMoveCommand.class));
+                handleMakeMove(session, gson.fromJson(message, MakeMove.class));
                 break;
             case LEAVE:
-                handleLeave(session, gson.fromJson(message, UserGameCommand.LeaveCommand.class));
+                handleLeave(session, gson.fromJson(message, Leave.class));
                 break;
             case RESIGN:
-                handleResign(session, gson.fromJson(message, UserGameCommand.ResignCommand.class));
+                handleResign(session, gson.fromJson(message, Resign.class));
                 break;
             default:
                 sendErrorMessage(session, "Unknown command type.");
@@ -80,7 +87,7 @@ public class WebSocketHandler {
     }
 
     private void validateCommand(UserGameCommand command) throws Exception {
-        String username = authService.validateAuthToken(command.getAuthString());
+        String username = authService.validateAuthToken(command.getAuthToken());
         if (username == null) {
             throw new Exception("Invalid auth token.");
         }
@@ -90,8 +97,8 @@ public class WebSocketHandler {
             case MAKE_MOVE:
             case LEAVE:
             case RESIGN:
-                if (command instanceof UserGameCommand.ConnectCommand) {
-                    int gameID = ((UserGameCommand.ConnectCommand) command).getGameID();
+                if (command instanceof Connect) {
+                    int gameID = ((Connect) command).getGameID();
                     if (!gameService.isValidGameID(gameID)) {
                         throw new Exception("Invalid game ID.");
                     }
@@ -102,17 +109,16 @@ public class WebSocketHandler {
         }
     }
 
-    private void handleConnect(Session session, UserGameCommand.ConnectCommand command) {
+    private void handleConnect(Session session, Connect command) {
         try {
-            String username = authService.validateAuthToken(command.getAuthString());
+            String username = authService.validateAuthToken(command.getAuthToken());
             if (!gameService.isValidGameID(command.getGameID())) {
                 sendErrorMessage(session, "Invalid game ID.");
                 return;
             }
             sessionUserMap.put(session, username);
-            // Add additional logic for connecting to a game if needed
             ChessGame game = gameService.loadGame(command.getGameID());
-            ServerMessage message = new ServerMessage.LoadGameMessage(game);
+            LoadGame message = new LoadGame(game);
             sendMessage(session, gson.toJson(message));
             broadcastNotificationExceptSender(session, username + " connected to the game.");
         } catch (Exception e) {
@@ -120,7 +126,7 @@ public class WebSocketHandler {
         }
     }
 
-    private void handleMakeMove(Session session, UserGameCommand.MakeMoveCommand command) {
+    private void handleMakeMove(Session session, MakeMove command) {
         try {
             String username = sessionUserMap.get(session);
             if (username == null) {
@@ -135,8 +141,7 @@ public class WebSocketHandler {
             }
 
             // Check if the game is over before processing the move
-            String gameStatus = gameService.checkForCheckAndCheckmate(game, game.getTeamTurn());
-            if (!gameStatus.equals("none")) {
+            if (game.isGameOver()) {
                 sendErrorMessage(session, "Cannot make a move: game is over.");
                 return;
             }
@@ -145,7 +150,7 @@ public class WebSocketHandler {
             game = gameService.processMove(command.getGameID(), command.getMove());
 
             // Send updated game state back to the player who made the move
-            ServerMessage loadGameMessage = new ServerMessage.LoadGameMessage(game);
+            LoadGame loadGameMessage = new LoadGame(game);
             sendMessage(session, gson.toJson(loadGameMessage));
 
             // Send updated game state and notification about the move to all other clients
@@ -157,14 +162,13 @@ public class WebSocketHandler {
         }
     }
 
-    private void handleLeave(Session session, UserGameCommand.LeaveCommand command) {
+    private void handleLeave(Session session, Leave command) {
         try {
             String username = sessionUserMap.get(session);
             if (username == null) {
                 sendErrorMessage(session, "User not authenticated.");
                 return;
             }
-            // Add logic for leaving the game
             sessionUserMap.remove(session);
             broadcastNotification(session, username + " left the game.");
         } catch (Exception e) {
@@ -172,7 +176,7 @@ public class WebSocketHandler {
         }
     }
 
-    private void handleResign(Session session, UserGameCommand.ResignCommand command) {
+    private void handleResign(Session session, Resign command) {
         try {
             String username = sessionUserMap.get(session);
             if (username == null) {
@@ -181,6 +185,7 @@ public class WebSocketHandler {
             }
 
             ChessGame game = gameService.loadGame(command.getGameID());
+            System.out.println("Handling resign for user: " + username + ", gameID: " + command.getGameID());
 
             // Check if the user is part of the game and if the game is already over
             ChessGame.TeamColor playerTeam;
@@ -191,16 +196,17 @@ public class WebSocketHandler {
                 return;
             }
 
-            String gameStatus = gameService.checkForCheckAndCheckmate(game, playerTeam);
-            if (!gameStatus.equals("none")) {
+            if (game.isGameOver()) {
+                System.out.println("Game is already over. Sending error message.");
                 sendErrorMessage(session, "Cannot resign: game is already over.");
                 return;
             }
 
             // Process the resign action
+            game.setGameOver(true);
+            gameService.saveGame(command.getGameID(), game);
+            System.out.println("User " + username + " resigned. Game set to over.");
             broadcastNotification(session, username + " resigned from the game.");
-            // Additional logic to handle the end of the game due to resign can be added here
-
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to resign: " + e.getMessage());
         }
@@ -215,12 +221,13 @@ public class WebSocketHandler {
     }
 
     private void sendErrorMessage(Session session, String errorMessage) {
-        ServerMessage message = new ServerMessage.ErrorMessage(errorMessage);
+        System.out.println("Sending error message: " + errorMessage);
+        Error message = new Error(errorMessage);
         sendMessage(session, gson.toJson(message));
     }
 
     private void broadcastNotification(Session sender, String notification) {
-        ServerMessage message = new ServerMessage.NotificationMessage(notification);
+        Notification message = new Notification(notification);
         for (Session session : sessionUserMap.keySet()) {
             if (session.isOpen()) {
                 sendMessage(session, gson.toJson(message));
@@ -229,7 +236,7 @@ public class WebSocketHandler {
     }
 
     private void broadcastNotificationExceptSender(Session sender, String notification) {
-        ServerMessage message = new ServerMessage.NotificationMessage(notification);
+        Notification message = new Notification(notification);
         for (Session session : sessionUserMap.keySet()) {
             if (session.isOpen() && !session.equals(sender)) {
                 sendMessage(session, gson.toJson(message));
