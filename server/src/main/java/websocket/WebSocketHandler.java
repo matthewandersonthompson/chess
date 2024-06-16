@@ -2,6 +2,7 @@ package websocket;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import dataaccess.DataAccessException; // Add this import
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import service.AuthService;
@@ -133,6 +134,13 @@ public class WebSocketHandler {
                 return;
             }
 
+            // Check if the game is over before processing the move
+            String gameStatus = gameService.checkForCheckAndCheckmate(game, game.getTeamTurn());
+            if (!gameStatus.equals("none")) {
+                sendErrorMessage(session, "Cannot make a move: game is over.");
+                return;
+            }
+
             // Process the move and get the updated game state
             game = gameService.processMove(command.getGameID(), command.getMove());
 
@@ -146,14 +154,6 @@ public class WebSocketHandler {
             broadcastNotificationExceptSender(session, moveDescription);
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to make move: " + e.getMessage());
-        }
-    }
-
-    private void broadcastMessageToAllExceptSender(Session sender, String message) {
-        for (Session session : sessionUserMap.keySet()) {
-            if (session.isOpen() && !session.equals(sender)) {
-                sendMessage(session, message);
-            }
         }
     }
 
@@ -179,8 +179,28 @@ public class WebSocketHandler {
                 sendErrorMessage(session, "User not authenticated.");
                 return;
             }
-            // Add logic for resigning the game
+
+            ChessGame game = gameService.loadGame(command.getGameID());
+
+            // Check if the user is part of the game and if the game is already over
+            ChessGame.TeamColor playerTeam;
+            try {
+                playerTeam = gameService.getPlayerTeam(command.getGameID(), username);
+            } catch (DataAccessException e) {
+                sendErrorMessage(session, "User not part of this game.");
+                return;
+            }
+
+            String gameStatus = gameService.checkForCheckAndCheckmate(game, playerTeam);
+            if (!gameStatus.equals("none")) {
+                sendErrorMessage(session, "Cannot resign: game is already over.");
+                return;
+            }
+
+            // Process the resign action
             broadcastNotification(session, username + " resigned from the game.");
+            // Additional logic to handle the end of the game due to resign can be added here
+
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to resign: " + e.getMessage());
         }
@@ -213,6 +233,14 @@ public class WebSocketHandler {
         for (Session session : sessionUserMap.keySet()) {
             if (session.isOpen() && !session.equals(sender)) {
                 sendMessage(session, gson.toJson(message));
+            }
+        }
+    }
+
+    private void broadcastMessageToAllExceptSender(Session sender, String message) {
+        for (Session session : sessionUserMap.keySet()) {
+            if (session.isOpen() && !session.equals(sender)) {
+                sendMessage(session, message);
             }
         }
     }
