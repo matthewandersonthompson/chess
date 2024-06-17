@@ -14,11 +14,14 @@ import websocket.messages.Error;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @WebSocket
 public class WebSocketHandler {
 
     private static final Map<Session, String> sessionUserMap = new HashMap<>();
+    private static final Map<String, Integer> userGameMap = new ConcurrentHashMap<>();
     private static final Gson gson = new Gson();
 
     private static GameService gameService;
@@ -71,7 +74,8 @@ public class WebSocketHandler {
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
         System.out.println("WebSocket connection closed: " + session.getRemoteAddress().getAddress());
-        sessionUserMap.remove(session);
+        String username = sessionUserMap.remove(session);
+        userGameMap.remove(username);
     }
 
     @OnWebSocketError
@@ -110,10 +114,11 @@ public class WebSocketHandler {
                 return;
             }
             sessionUserMap.put(session, username);
+            userGameMap.put(username, command.getGameID());
             ChessGame game = gameService.loadGame(command.getGameID());
             LoadGame message = new LoadGame(game);
             sendMessage(session, gson.toJson(message));
-            broadcastNotificationExceptSender(session, username + " connected to the game.");
+            broadcastNotificationExceptSender(session, username + " connected to the game.", command.getGameID());
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to connect: " + e.getMessage());
         }
@@ -144,8 +149,8 @@ public class WebSocketHandler {
             sendMessage(session, gson.toJson(loadGameMessage));
 
             String moveDescription = String.format("%s moved from %s to %s", username, command.getMove().getStartPosition(), command.getMove().getEndPosition());
-            broadcastMessageToAllExceptSender(session, gson.toJson(loadGameMessage));
-            broadcastNotificationExceptSender(session, moveDescription);
+            broadcastMessageToAllExceptSender(session, gson.toJson(loadGameMessage), command.getGameID());
+            broadcastNotificationExceptSender(session, moveDescription, command.getGameID());
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to make move: " + e.getMessage());
         }
@@ -158,19 +163,17 @@ public class WebSocketHandler {
                 sendErrorMessage(session, "User not authenticated.");
                 return;
             }
-            sessionUserMap.remove(session);
 
-            // Update game state to reflect that the player has left
-            ChessGame game = gameService.loadGame(command.getGameID());
-            if (username.equals(gameService.getPlayerUsername(command.getGameID(), ChessGame.TeamColor.WHITE))) {
-                gameService.removePlayer(command.getGameID(), ChessGame.TeamColor.WHITE);
-                System.out.println("Removed white player: " + username);
-            } else if (username.equals(gameService.getPlayerUsername(command.getGameID(), ChessGame.TeamColor.BLACK))) {
-                gameService.removePlayer(command.getGameID(), ChessGame.TeamColor.BLACK);
-                System.out.println("Removed black player: " + username);
+            sessionUserMap.remove(session);
+            Integer gameID = userGameMap.remove(username);
+
+            if (gameID == null || gameID != command.getGameID()) {
+                sendErrorMessage(session, "User not part of this game.");
+                return;
             }
 
-            broadcastNotification(session, username + " left the game.");
+            gameService.removePlayer(command.getGameID(), username);
+            broadcastNotificationExceptSender(session, username + " left the game.", command.getGameID());
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to leave game: " + e.getMessage());
         }
@@ -204,7 +207,7 @@ public class WebSocketHandler {
             game.setGameOver(true);
             gameService.saveGame(command.getGameID(), game);
             System.out.println("User " + username + " resigned. Game set to over.");
-            broadcastNotification(session, username + " resigned from the game.");
+            broadcastNotification(session, username + " resigned from the game.", command.getGameID());
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to resign: " + e.getMessage());
         }
@@ -224,27 +227,30 @@ public class WebSocketHandler {
         sendMessage(session, gson.toJson(message));
     }
 
-    private void broadcastNotification(Session sender, String notification) {
+    private void broadcastNotification(Session sender, String notification, int gameID) {
         Notification message = new Notification(notification);
         for (Session session : sessionUserMap.keySet()) {
-            if (session.isOpen()) {
+            String username = sessionUserMap.get(session);
+            if (session.isOpen() && userGameMap.get(username) == gameID) {
                 sendMessage(session, gson.toJson(message));
             }
         }
     }
 
-    private void broadcastNotificationExceptSender(Session sender, String notification) {
+    private void broadcastNotificationExceptSender(Session sender, String notification, int gameID) {
         Notification message = new Notification(notification);
         for (Session session : sessionUserMap.keySet()) {
-            if (session.isOpen() && !session.equals(sender)) {
+            String username = sessionUserMap.get(session);
+            if (session.isOpen() && !session.equals(sender) && userGameMap.get(username) == gameID) {
                 sendMessage(session, gson.toJson(message));
             }
         }
     }
 
-    private void broadcastMessageToAllExceptSender(Session sender, String message) {
+    private void broadcastMessageToAllExceptSender(Session sender, String message, int gameID) {
         for (Session session : sessionUserMap.keySet()) {
-            if (session.isOpen() && !session.equals(sender)) {
+            String username = sessionUserMap.get(session);
+            if (session.isOpen() && !session.equals(sender) && userGameMap.get(username) == gameID) {
                 sendMessage(session, message);
             }
         }

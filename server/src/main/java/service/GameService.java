@@ -124,18 +124,21 @@ public class GameService {
         return null;
     }
 
-    public void removePlayer(int gameID, ChessGame.TeamColor teamColor) throws DataAccessException {
+    public void removePlayer(int gameID, String username) throws DataAccessException {
         GameData gameData = dataAccess.getGame(gameID);
         if (gameData == null) {
             throw new DataAccessException("Game not found");
         }
 
-        if (teamColor == ChessGame.TeamColor.WHITE) {
+        if (username.equals(gameData.getWhiteUsername())) {
             gameData.setWhiteUsername(null);
-        } else if (teamColor == ChessGame.TeamColor.BLACK) {
+        } else if (username.equals(gameData.getBlackUsername())) {
             gameData.setBlackUsername(null);
+        } else {
+            // Remove observer or other roles if necessary
         }
 
         dataAccess.updateGame(gameData);
     }
+
 }
