@@ -1,5 +1,6 @@
 package service;
 
+import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import dataaccess.DataAccessInterface;
 import model.GameData;
@@ -70,7 +71,10 @@ public class GameService {
         if (gameData == null) {
             throw new DataAccessException("Game not found");
         }
-        gameData.setBoardState(serializeBoard(game.getBoard()));
+        //process the move
+        //then go to savegame
+        //this need to be NOT just board state, but also game state(the JSON version of your game just through)
+        gameData.setGameState(new Gson().toJson(game));
         dataAccess.updateGame(gameData);
     }
 

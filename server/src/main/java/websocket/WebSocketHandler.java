@@ -7,15 +7,9 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import service.AuthService;
 import service.GameService;
-import websocket.commands.Connect;
-import websocket.commands.Leave;
-import websocket.commands.MakeMove;
-import websocket.commands.Resign;
-import websocket.commands.UserGameCommand;
+import websocket.commands.*;
+import websocket.messages.*;
 import websocket.messages.Error;
-import websocket.messages.LoadGame;
-import websocket.messages.Notification;
-import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -31,7 +25,6 @@ public class WebSocketHandler {
     private static AuthService authService;
 
     public WebSocketHandler() {
-        // Default constructor needed for @WebSocket
     }
 
     public static void setServices(GameService gameService, AuthService authService) {
@@ -140,20 +133,18 @@ public class WebSocketHandler {
                 return;
             }
 
-            // Check if the game is over before processing the move
             if (game.isGameOver()) {
                 sendErrorMessage(session, "Cannot make a move: game is over.");
                 return;
             }
 
-            // Process the move and get the updated game state
             game = gameService.processMove(command.getGameID(), command.getMove());
 
-            // Send updated game state back to the player who made the move
+            //switch the team turn and then save the updated one to the dataabase and send the new one to everybody
+
             LoadGame loadGameMessage = new LoadGame(game);
             sendMessage(session, gson.toJson(loadGameMessage));
 
-            // Send updated game state and notification about the move to all other clients
             String moveDescription = String.format("%s moved from %s to %s", username, command.getMove().getStartPosition(), command.getMove().getEndPosition());
             broadcastMessageToAllExceptSender(session, gson.toJson(loadGameMessage));
             broadcastNotificationExceptSender(session, moveDescription);
@@ -187,7 +178,6 @@ public class WebSocketHandler {
             ChessGame game = gameService.loadGame(command.getGameID());
             System.out.println("Handling resign for user: " + username + ", gameID: " + command.getGameID());
 
-            // Check if the user is part of the game and if the game is already over
             ChessGame.TeamColor playerTeam;
             try {
                 playerTeam = gameService.getPlayerTeam(command.getGameID(), username);
@@ -202,7 +192,6 @@ public class WebSocketHandler {
                 return;
             }
 
-            // Process the resign action
             game.setGameOver(true);
             gameService.saveGame(command.getGameID(), game);
             System.out.println("User " + username + " resigned. Game set to over.");
