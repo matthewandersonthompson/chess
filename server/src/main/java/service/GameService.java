@@ -71,9 +71,6 @@ public class GameService {
         if (gameData == null) {
             throw new DataAccessException("Game not found");
         }
-        //process the move
-        //then go to savegame
-        //this need to be NOT just board state, but also game state(the JSON version of your game just through)
         gameData.setGameState(new Gson().toJson(game));
         dataAccess.updateGame(gameData);
     }
@@ -150,5 +147,35 @@ public class GameService {
         } else {
             throw new DataAccessException("User not part of this game");
         }
+    }
+
+    // New method to get the player's username based on team color
+    public String getPlayerUsername(int gameID, ChessGame.TeamColor teamColor) throws DataAccessException {
+        GameData gameData = dataAccess.getGame(gameID);
+        if (gameData == null) {
+            throw new DataAccessException("Game not found");
+        }
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            return gameData.getWhiteUsername();
+        } else if (teamColor == ChessGame.TeamColor.BLACK) {
+            return gameData.getBlackUsername();
+        }
+        return null;
+    }
+
+    // New method to remove player from the game
+    public void removePlayer(int gameID, ChessGame.TeamColor teamColor) throws DataAccessException {
+        GameData gameData = dataAccess.getGame(gameID);
+        if (gameData == null) {
+            throw new DataAccessException("Game not found");
+        }
+
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            gameData.setWhiteUsername(null);
+        } else if (teamColor == ChessGame.TeamColor.BLACK) {
+            gameData.setBlackUsername(null);
+        }
+
+        dataAccess.updateGame(gameData);
     }
 }

@@ -140,8 +140,6 @@ public class WebSocketHandler {
 
             game = gameService.processMove(command.getGameID(), command.getMove());
 
-            //switch the team turn and then save the updated one to the dataabase and send the new one to everybody
-
             LoadGame loadGameMessage = new LoadGame(game);
             sendMessage(session, gson.toJson(loadGameMessage));
 
@@ -161,6 +159,17 @@ public class WebSocketHandler {
                 return;
             }
             sessionUserMap.remove(session);
+
+            // Update game state to reflect that the player has left
+            ChessGame game = gameService.loadGame(command.getGameID());
+            if (username.equals(gameService.getPlayerUsername(command.getGameID(), ChessGame.TeamColor.WHITE))) {
+                gameService.removePlayer(command.getGameID(), ChessGame.TeamColor.WHITE);
+                System.out.println("Removed white player: " + username);
+            } else if (username.equals(gameService.getPlayerUsername(command.getGameID(), ChessGame.TeamColor.BLACK))) {
+                gameService.removePlayer(command.getGameID(), ChessGame.TeamColor.BLACK);
+                System.out.println("Removed black player: " + username);
+            }
+
             broadcastNotification(session, username + " left the game.");
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to leave game: " + e.getMessage());
