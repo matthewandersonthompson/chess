@@ -20,9 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @WebSocket
 public class WebSocketHandler {
 
-    private static final Map<Session, String> sessionUserMap = new HashMap<>();
-    private static final Map<String, Integer> userGameMap = new ConcurrentHashMap<>();
-    private static final Gson gson = new Gson();
+    private static final Map<Session, String> SESSION_USER_MAP = new HashMap<>();
+    private static final Map<String, Integer> USER_GAME_MAP = new ConcurrentHashMap<>();
+    private static final Gson GSON = new Gson();
 
     private static GameService gameService;
     private static AuthService authService;
@@ -43,7 +43,7 @@ public class WebSocketHandler {
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
         System.out.println("Received message: " + message);
-        UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
+        UserGameCommand command = GSON.fromJson(message, UserGameCommand.class);
 
         try {
             validateCommand(command);
@@ -54,16 +54,16 @@ public class WebSocketHandler {
 
         switch (command.getCommandType()) {
             case CONNECT:
-                handleConnect(session, gson.fromJson(message, Connect.class));
+                handleConnect(session, GSON.fromJson(message, Connect.class));
                 break;
             case MAKE_MOVE:
-                handleMakeMove(session, gson.fromJson(message, MakeMove.class));
+                handleMakeMove(session, GSON.fromJson(message, MakeMove.class));
                 break;
             case LEAVE:
-                handleLeave(session, gson.fromJson(message, Leave.class));
+                handleLeave(session, GSON.fromJson(message, Leave.class));
                 break;
             case RESIGN:
-                handleResign(session, gson.fromJson(message, Resign.class));
+                handleResign(session, GSON.fromJson(message, Resign.class));
                 break;
             default:
                 sendErrorMessage(session, "Unknown command type.");
@@ -74,8 +74,8 @@ public class WebSocketHandler {
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
         System.out.println("WebSocket connection closed: " + session.getRemoteAddress().getAddress());
-        String username = sessionUserMap.remove(session);
-        userGameMap.remove(username);
+        String username = SESSION_USER_MAP.remove(session);
+        USER_GAME_MAP.remove(username);
     }
 
     @OnWebSocketError
@@ -113,11 +113,11 @@ public class WebSocketHandler {
                 sendErrorMessage(session, "Invalid game ID.");
                 return;
             }
-            sessionUserMap.put(session, username);
-            userGameMap.put(username, command.getGameID());
+            SESSION_USER_MAP.put(session, username);
+            USER_GAME_MAP.put(username, command.getGameID());
             ChessGame game = gameService.loadGame(command.getGameID());
             LoadGame message = new LoadGame(game);
-            sendMessage(session, gson.toJson(message));
+            sendMessage(session, GSON.toJson(message));
             broadcastNotificationExceptSender(session, username + " connected to the game.", command.getGameID());
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to connect: " + e.getMessage());
@@ -126,7 +126,7 @@ public class WebSocketHandler {
 
     private void handleMakeMove(Session session, MakeMove command) {
         try {
-            String username = sessionUserMap.get(session);
+            String username = SESSION_USER_MAP.get(session);
             if (username == null) {
                 sendErrorMessage(session, "User not authenticated.");
                 return;
@@ -146,10 +146,10 @@ public class WebSocketHandler {
             game = gameService.processMove(command.getGameID(), command.getMove());
 
             LoadGame loadGameMessage = new LoadGame(game);
-            sendMessage(session, gson.toJson(loadGameMessage));
+            sendMessage(session, GSON.toJson(loadGameMessage));
 
             String moveDescription = String.format("%s moved from %s to %s", username, command.getMove().getStartPosition(), command.getMove().getEndPosition());
-            broadcastMessageToAllExceptSender(session, gson.toJson(loadGameMessage), command.getGameID());
+            broadcastMessageToAllExceptSender(session, GSON.toJson(loadGameMessage), command.getGameID());
             broadcastNotificationExceptSender(session, moveDescription, command.getGameID());
         } catch (Exception e) {
             sendErrorMessage(session, "Failed to make move: " + e.getMessage());
@@ -158,14 +158,14 @@ public class WebSocketHandler {
 
     private void handleLeave(Session session, Leave command) {
         try {
-            String username = sessionUserMap.get(session);
+            String username = SESSION_USER_MAP.get(session);
             if (username == null) {
                 sendErrorMessage(session, "User not authenticated.");
                 return;
             }
 
-            sessionUserMap.remove(session);
-            Integer gameID = userGameMap.remove(username);
+            SESSION_USER_MAP.remove(session);
+            Integer gameID = USER_GAME_MAP.remove(username);
 
             if (gameID == null || gameID != command.getGameID()) {
                 sendErrorMessage(session, "User not part of this game.");
@@ -181,7 +181,7 @@ public class WebSocketHandler {
 
     private void handleResign(Session session, Resign command) {
         try {
-            String username = sessionUserMap.get(session);
+            String username = SESSION_USER_MAP.get(session);
             if (username == null) {
                 sendErrorMessage(session, "User not authenticated.");
                 return;
@@ -224,33 +224,33 @@ public class WebSocketHandler {
     private void sendErrorMessage(Session session, String errorMessage) {
         System.out.println("Sending error message: " + errorMessage);
         Error message = new Error(errorMessage);
-        sendMessage(session, gson.toJson(message));
+        sendMessage(session, GSON.toJson(message));
     }
 
     private void broadcastNotification(Session sender, String notification, int gameID) {
         Notification message = new Notification(notification);
-        for (Session session : sessionUserMap.keySet()) {
-            String username = sessionUserMap.get(session);
-            if (session.isOpen() && userGameMap.get(username) == gameID) {
-                sendMessage(session, gson.toJson(message));
+        for (Session session : SESSION_USER_MAP.keySet()) {
+            String username = SESSION_USER_MAP.get(session);
+            if (session.isOpen() && USER_GAME_MAP.get(username) == gameID) {
+                sendMessage(session, GSON.toJson(message));
             }
         }
     }
 
     private void broadcastNotificationExceptSender(Session sender, String notification, int gameID) {
         Notification message = new Notification(notification);
-        for (Session session : sessionUserMap.keySet()) {
-            String username = sessionUserMap.get(session);
-            if (session.isOpen() && !session.equals(sender) && userGameMap.get(username) == gameID) {
-                sendMessage(session, gson.toJson(message));
+        for (Session session : SESSION_USER_MAP.keySet()) {
+            String username = SESSION_USER_MAP.get(session);
+            if (session.isOpen() && !session.equals(sender) && USER_GAME_MAP.get(username) == gameID) {
+                sendMessage(session, GSON.toJson(message));
             }
         }
     }
 
     private void broadcastMessageToAllExceptSender(Session sender, String message, int gameID) {
-        for (Session session : sessionUserMap.keySet()) {
-            String username = sessionUserMap.get(session);
-            if (session.isOpen() && !session.equals(sender) && userGameMap.get(username) == gameID) {
+        for (Session session : SESSION_USER_MAP.keySet()) {
+            String username = SESSION_USER_MAP.get(session);
+            if (session.isOpen() && !session.equals(sender) && USER_GAME_MAP.get(username) == gameID) {
                 sendMessage(session, message);
             }
         }

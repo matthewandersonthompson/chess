@@ -41,21 +41,6 @@ public class ServerFacade {
         }
     }
 
-    private void handleWebSocketMessage(String message) {
-        ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
-        switch (serverMessage.getServerMessageType()) {
-            case LOAD_GAME:
-                handleLoadGameMessage((ServerMessage.LoadGameMessage) serverMessage);
-                break;
-            case ERROR:
-                System.out.println("Error received: " + serverMessage.getErrorMessage());
-                break;
-            case NOTIFICATION:
-                System.out.println("Notification received: " + serverMessage.getMessage());
-                break;
-        }
-    }
-
     private void handleLoadGameMessage(ServerMessage.LoadGameMessage loadGameMessage) {
         ChessGame game = loadGameMessage.getGame();
         GameplayUI gameplayUI = new GameplayUI(game, "WHITE", 0, this); // Adjusted the parameter as there is no gameID
