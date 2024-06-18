@@ -86,17 +86,6 @@ public class GameService {
         return game;
     }
 
-    public String checkForCheckAndCheckmate(ChessGame game, ChessGame.TeamColor teamColor) {
-        if (game.isInCheckmate(teamColor)) {
-            return "checkmate";
-        } else if (game.isInCheck(teamColor)) {
-            return "check";
-        } else if (game.isInStalemate(teamColor)) {
-            return "stalemate";
-        }
-        return "none";
-    }
-
     public ChessGame.TeamColor getPlayerTeam(int gameID, String username) throws DataAccessException {
         GameData gameData = dataAccess.getGame(gameID);
         if (gameData == null) {

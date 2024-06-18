@@ -58,10 +58,6 @@ public class ServerMessage {
         return this.message;
     }
 
-    public void setMessage(String message) {  // Added method
-        this.message = message;
-    }
-
     public String getErrorMessage() {  // Added method
         return this.errorMessage;
     }
