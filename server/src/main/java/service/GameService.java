@@ -111,19 +111,6 @@ public class GameService {
         }
     }
 
-    public String getPlayerUsername(int gameID, ChessGame.TeamColor teamColor) throws DataAccessException {
-        GameData gameData = dataAccess.getGame(gameID);
-        if (gameData == null) {
-            throw new DataAccessException("Game not found");
-        }
-        if (teamColor == ChessGame.TeamColor.WHITE) {
-            return gameData.getWhiteUsername();
-        } else if (teamColor == ChessGame.TeamColor.BLACK) {
-            return gameData.getBlackUsername();
-        }
-        return null;
-    }
-
     public void removePlayer(int gameID, String username) throws DataAccessException {
         GameData gameData = dataAccess.getGame(gameID);
         if (gameData == null) {
@@ -135,7 +122,6 @@ public class GameService {
         } else if (username.equals(gameData.getBlackUsername())) {
             gameData.setBlackUsername(null);
         } else {
-            // Remove observer or other roles if necessary
         }
 
         dataAccess.updateGame(gameData);

@@ -41,27 +41,6 @@ public class ServerFacade {
         }
     }
 
-    @OnOpen
-    public void onOpen(Session session) {
-        this.session = session;
-        System.out.println("WebSocket connection opened");
-    }
-
-    @OnMessage
-    public void onMessage(String message) {
-        handleWebSocketMessage(message);
-    }
-
-    @OnClose
-    public void onClose(Session session, CloseReason closeReason) {
-        System.out.println("WebSocket connection closed: " + closeReason);
-    }
-
-    @OnError
-    public void onError(Session session, Throwable throwable) {
-        throwable.printStackTrace();
-    }
-
     private void handleWebSocketMessage(String message) {
         ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
         switch (serverMessage.getServerMessageType()) {

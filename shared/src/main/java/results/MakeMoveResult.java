@@ -9,10 +9,6 @@ public class MakeMoveResult {
         this.message = message;
     }
 
-    public boolean isSuccess() {
-        return success;
-    }
-
     public String getMessage() {
         return message;
     }

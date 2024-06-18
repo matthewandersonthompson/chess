@@ -51,14 +51,4 @@ public class GameData {
         this.gameState = gameState;
     }
 
-    // Add methods to get and set the board state
-    public String getBoardState() {
-        return gameState; // Assuming gameState holds the board state
-    }
-
-    public void setBoardState(String boardState) {
-        this.gameState = boardState; // Assuming gameState holds the board state
-    }
-
-    //most people have an object labeled chessgame that includes the entire chessgame object as a json object INCLUDING whos turn it is, I should probably add this
 }

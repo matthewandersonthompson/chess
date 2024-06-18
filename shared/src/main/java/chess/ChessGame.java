@@ -9,18 +9,18 @@ public class ChessGame {
     private ChessBoard board;
     private TeamColor currentTurn;
     private Map<ChessMove, ChessPiece> capturedPieces;
-    private boolean gameOver; // Add this field
+    private boolean gameOver;
 
-    //initialize all of the stuff for ChessGame
+
     public ChessGame() {
         this.board = new ChessBoard();
         this.board.resetBoard();
         this.currentTurn = TeamColor.WHITE;
         this.capturedPieces = new HashMap<>();
-        this.gameOver = false; // Initialize the field
+        this.gameOver = false;
     }
 
-    //return all of the valid moves for a piece at a given position
+
     public Collection<ChessMove> validMoves(ChessPosition position) {
         Collection<ChessMove> moves = new ArrayList<>();
         if (board.isPositionValid(position)) {
@@ -33,7 +33,7 @@ public class ChessGame {
         return moves;
     }
 
-    //check if any move that happens might leave the king in check
+
     private boolean leavesKingInCheck(TeamColor teamColor, ChessMove move) {
         executeMove(move);
         boolean inCheck = isInCheck(teamColor);
@@ -41,7 +41,6 @@ public class ChessGame {
         return inCheck;
     }
 
-    //if a move is valid, execute it
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
@@ -65,13 +64,12 @@ public class ChessGame {
         toggleTurn();
     }
 
-    //now check if the specific king is in check
+
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition kingPosition = findKingPosition(teamColor);
         return kingPosition != null && isPositionUnderAttack(kingPosition, teamColor);
     }
 
-    //and check if the specific TEAM is in checkMATE
     public boolean isInCheckmate(TeamColor teamColor) {
         if (!isInCheck(teamColor)) {
             return false;
@@ -80,7 +78,6 @@ public class ChessGame {
         return !hasAnyValidMove(teamColor);
     }
 
-    //is the team in stalemate
     public boolean isInStalemate(TeamColor teamColor) {
         if (isInCheck(teamColor)) {
             return false;
@@ -89,27 +86,22 @@ public class ChessGame {
         return !hasAnyValidMove(teamColor);
     }
 
-    //returns the board
     public ChessBoard getBoard() {
         return this.board;
     }
 
-    //set the chess board to another board provided
     public void setBoard(ChessBoard board) {
         this.board = board;
     }
 
-    //get the team color for whoever's turn it is
     public TeamColor getTeamTurn() {
         return this.currentTurn;
     }
 
-    //sets team color
     public void setTeamTurn(TeamColor teamTurn) {
         this.currentTurn = teamTurn;
     }
 
-    //get the position of king
     private ChessPosition findKingPosition(TeamColor teamColor) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
@@ -142,7 +134,6 @@ public class ChessGame {
         return false;
     }
 
-    //do we have a valid move?
     private boolean hasAnyValidMove(TeamColor teamColor) {
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
@@ -164,7 +155,6 @@ public class ChessGame {
         return false;
     }
 
-    //execute the move
     private void executeMove(ChessMove move) {
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
@@ -177,7 +167,6 @@ public class ChessGame {
         board.removePiece(start);
     }
 
-    //undo the move
     private void undoMove(ChessMove move) {
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
@@ -186,7 +175,6 @@ public class ChessGame {
         board.setPiece(end, capturedPieces.remove(move));
     }
 
-    //toggle between white and black if necessary
     private void toggleTurn() {
         currentTurn = (currentTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
     }
@@ -195,7 +183,6 @@ public class ChessGame {
         WHITE, BLACK;
     }
 
-    // Add the new methods
     public boolean isGameOver() {
         return gameOver;
     }
