@@ -41,12 +41,6 @@ public class ServerFacade {
         }
     }
 
-    private void handleLoadGameMessage(ServerMessage.LoadGameMessage loadGameMessage) {
-        ChessGame game = loadGameMessage.getGame();
-        GameplayUI gameplayUI = new GameplayUI(game, "WHITE", 0, this); // Adjusted the parameter as there is no gameID
-        gameplayUI.display();
-    }
-
     public void sendWebSocketMessage(Object message) {
         String jsonMessage = gson.toJson(message);
         session.getAsyncRemote().sendText(jsonMessage);
@@ -140,10 +134,5 @@ public class ServerFacade {
     public void connect(int gameID) throws Exception {
         UserGameCommand.ConnectCommand connectCommand = new UserGameCommand.ConnectCommand(authToken, gameID);
         sendWebSocketMessage(connectCommand);
-    }
-
-    // Getter for authToken
-    public String getAuthToken() {
-        return authToken;
     }
 }
